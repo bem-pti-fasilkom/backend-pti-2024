@@ -23,6 +23,9 @@ class Pengaduan(models.Model):
     )
     isi = models.TextField()
     lokasi = models.TextField()
+
+    # TODO: Atur settings MEDIA_ROOT untuk penyimpanan bukti pengaduan
+    evidence = models.FileField(upload_to="")
     tanggal_post = models.DateTimeField(auto_now=True)
 
 
