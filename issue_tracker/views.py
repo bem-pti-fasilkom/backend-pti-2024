@@ -23,6 +23,27 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         # pengaduan.__setattr__("tanggal_post", unformatted_date.strftime("%Y-%m-%d, %X"))
 
         return Response(serializer.data)
+    
+    def update(self, request, pk=None) :
+        # User biasa : Judul, isi, lokasi (status = unresolved)
+        # Admin : status
+        pengaduan = get_object_or_404(self.queryset, pk=pk)
+        serializer = PengaduanSerializer(pengaduan)
+
+        if pengaduan.Status.UNRESOLVED :
+            judul = request.data['judul']
+            isi = request.data['isi']
+            lokasi = request.data['lokasi']
+
+            pengaduan.judul = judul
+            pengaduan.isi = isi
+            pengaduan.lokasi = lokasi
+            pengaduan.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        # Untuk admin belum dibuat, menunggu update models
+
+    def delete(self, request, pk=None) :
+
 
 
 class UserViewSet(viewsets.ModelViewSet):
