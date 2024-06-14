@@ -48,7 +48,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
 
         if pengaduan.Status.UNRESOLVED :
             pengaduan.delete()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_200_OK)
         
         # Apakah admin bisa ngapus juga? tolong konfirm thanks
 
