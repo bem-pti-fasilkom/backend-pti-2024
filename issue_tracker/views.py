@@ -43,8 +43,14 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         # Untuk admin belum dibuat, menunggu update models
 
     def delete(self, request, pk=None) :
+        pengaduan = get_object_or_404(self.queryset, pk=pk)
+        serializer = PengaduanSerializer(pengaduan)
 
-
+        if pengaduan.Status.UNRESOLVED :
+            pengaduan.delete()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Apakah admin bisa ngapus juga? tolong konfirm thanks
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
