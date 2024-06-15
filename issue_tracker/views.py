@@ -26,7 +26,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     
     def update(self, request, pk=None) :
         # User biasa : Judul, isi, lokasi (status = unresolved)
-        # Admin : status
+        # Admin : Status
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         serializer = PengaduanSerializer(pengaduan)
 
@@ -38,21 +38,25 @@ class PengaduanViewSet(viewsets.ModelViewSet):
             pengaduan.judul = judul
             pengaduan.isi = isi
             pengaduan.lokasi = lokasi
-            if pengaduan.user.is_superuser :
-                status = request.data['status']
-                pengaduan.status = status
             pengaduan.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        if pengaduan.user.is_superuser :
+            status = request.data['status']
+            pengaduan.status = status
+            pengaduan.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response({'error_message' : 'Status bukan UNRESOLVED'}, status=status.HTTP_403_FORBIDDEN)
 
     def delete(self, request, pk=None) :
         pengaduan = get_object_or_404(self.queryset, pk=pk)
-        serializer = PengaduanSerializer(pengaduan)
 
         if pengaduan.Status.UNRESOLVED :
             pengaduan.delete()
             return Response(status=status.HTTP_200_OK)
         
-        # Apakah admin bisa ngapus juga? tolong konfirm thanks
+        return Response({'error_message' : 'Status bukan UNRESOLVED'}, status=status.HTTP_403_FORBIDDEN)
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
