@@ -14,7 +14,7 @@ class Pengaduan(models.Model):
 
     # TODO: Let user be identified by SSO account
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="pengaduan", null=True, blank=False
+        User, on_delete=models.CASCADE, related_name="pengaduan", null=True
     )
 
     judul = models.CharField(max_length=100)
@@ -22,7 +22,8 @@ class Pengaduan(models.Model):
         max_length=2, choices=Status.choices, default=Status.UNRESOLVED
     )
     isi = models.TextField()
-    lokasi = models.TextField()
+    lokasi = models.TextField(null=True)
+    evidence = models.URLField(null=True)
     tanggal_post = models.DateTimeField(auto_now=True)
 
 
