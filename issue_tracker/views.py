@@ -38,9 +38,11 @@ class PengaduanViewSet(viewsets.ModelViewSet):
             pengaduan.judul = judul
             pengaduan.isi = isi
             pengaduan.lokasi = lokasi
+            if pengaduan.user.is_superuser :
+                status = request.data['status']
+                pengaduan.status = status
             pengaduan.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        # Untuk admin belum dibuat, menunggu update models
 
     def delete(self, request, pk=None) :
         pengaduan = get_object_or_404(self.queryset, pk=pk)
