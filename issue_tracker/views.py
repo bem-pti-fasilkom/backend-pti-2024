@@ -74,6 +74,47 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         likes_count = Like.objects.filter(pengaduan=pengaduan).count()
         
         return Response({'amount_of_likes': likes_count, 'action': action}, status=status.HTTP_200_OK)
+    
+    def add_comment(self, request, pk=None) :
+        pengaduan = get_object_or_404(self.queryset, pk=pk)
+
+        if not pengaduan.anonymous:
+            author = request.user.username
+            isi = request.data.get('isi')
+
+            if isi:
+                comment = Comment(author=author, isi=isi, pengaduan=pengaduan)
+                comment.save()
+                comment_serializer = CommentSerializer(comment)
+                return Response(comment_serializer.data, status=status.HTTP_201_CREATED)
+            
+            return Response({'error_message': 'Komentar tidak boleh kosong!'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({'error_message' : 'User tidak terdaftar'}, status=status.HTTP_403_FORBIDDEN)
+    
+    def edit_comment(self, request, pk=None) :
+        comment = get_object_or_404(Comment, pk=pk)
+
+        if not comment.pengaduan.anonymous and comment.author == request.user.username:
+            isi = request.data.get('isi')
+            if isi:
+                comment.isi = isi
+                comment.save()
+                comment_serializer = CommentSerializer(comment)
+                return Response(comment_serializer.data, status=status.HTTP_200_OK)
+            
+            return Response({'error_message': 'Komentar tidak boleh kosong'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({'error_message' : 'User tidak terdaftar'}, status=status.HTTP_403_FORBIDDEN)
+    
+    def delete_comment(self, request, pk=None) :
+        comment = get_object_or_404(Comment, pk=pk)
+
+        if not comment.pengaduan.anonymous and comment.author == request.user.username:
+            comment.delete()
+            return Response(status=status.HTTP_200_OK)
+        
+        return Response({'error_message' : 'User tidak terdaftar'}, status=status.HTTP_403_FORBIDDEN)
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
