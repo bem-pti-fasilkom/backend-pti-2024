@@ -57,6 +57,23 @@ class PengaduanViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
         
         return Response({'error_message' : 'Status bukan UNRESOLVED'}, status=status.HTTP_403_FORBIDDEN)
+    
+    def like(self, request, pk=None):
+        pengaduan = get_object_or_404(self.queryset, pk=pk)
+        
+        # Check if the like already exists to toggle like/unlike
+        # Temporary implementation for 'akun_sso' field until authentication is done
+        pengaduan_like = Like.objects.get(akun_sso='akun_sso', pengaduan=pengaduan)
+        if pengaduan_like.exists():
+            pengaduan_like.delete()
+            action = 'unliked'
+        else:
+            Like.objects.create(akun_sso='akun_sso', pengaduan=pengaduan)
+            action = 'liked'
+        
+        likes_count = Like.objects.filter(pengaduan=pengaduan).count()
+        
+        return Response({'amount_of_likes': likes_count, 'action': action}, status=status.HTTP_200_OK)
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
