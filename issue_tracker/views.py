@@ -48,14 +48,23 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         
         return Response({'error_message' : 'Anda bukan Admin atau status bukan UNRESOLVED'}, status=status.HTTP_403_FORBIDDEN)
 
-    def delete(self, request, pk=None) :
-        pengaduan = get_object_or_404(self.queryset, pk=pk)
-
-        if pengaduan.Status.UNRESOLVED :
-            pengaduan.delete()
-            return Response(status=status.HTTP_200_OK)
-        
-        return Response({'error_message' : 'Status bukan UNRESOLVED'}, status=status.HTTP_403_FORBIDDEN)
+    def destroy(self, request, pk=None) :
+        # Requirement Delete Pengaduan: 
+        # 1. Pengaduan harus milik user
+        # 2. Status unresolved
+        try:
+            pengaduan = get_object_or_404(self.queryset, pk=pk)
+            if pengaduan.anonymous:
+                raise Exception("Anonymous tidak dapat menghapus pengaduan")
+            elif pengaduan.user.id != request.data["user"]:
+                raise Exception("User tidak memiliki akses untuk menghapus pengaduan")
+            elif not pengaduan.Status.UNRESOLVED: 
+                raise Exception("Status bukan unresolved")
+            else:
+                pengaduan.delete()
+                return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error_message' : f'{e}'}, status=status.HTTP_403_FORBIDDEN)
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
