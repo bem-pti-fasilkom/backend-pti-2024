@@ -3,6 +3,7 @@ from .serializers import *
 
 from rest_framework.response import Response
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 
 
 class PengaduanViewSet(viewsets.ModelViewSet):
@@ -65,6 +66,14 @@ class PengaduanViewSet(viewsets.ModelViewSet):
                 return Response(status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error_message' : f'{e}'}, status=status.HTTP_403_FORBIDDEN)
+        
+    @action(detail=False, methods=['get'], url_path='filter', url_name='filter')
+    # Hanya dapat melihat pengaduan yang dimiliki jika sudah login
+    def filter(self, request):
+        user = request.user.id
+        pengaduan = Pengaduan.objects.filter(user=user)
+        serializer = PengaduanSerializer(pengaduan, many=True)
+        return Response(serializer.data)
     
     def like(self, request, pk=None):
         pengaduan = get_object_or_404(self.queryset, pk=pk)
