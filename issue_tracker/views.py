@@ -1,14 +1,17 @@
 from django.shortcuts import get_object_or_404
-from .serializers import *
+from .serializers import CommentSerializer, PengaduanSerializer, UserSerializer
+from .models import Pengaduan
+from django.contrib.auth.models import User
 
 from rest_framework.response import Response
-from rest_framework import viewsets, status
-
+from rest_framework import viewsets, status as HttpStatus
+from jwt.lib import with_auth
 
 class PengaduanViewSet(viewsets.ModelViewSet):
     serializer_class = PengaduanSerializer
     queryset = Pengaduan.objects.all()
 
+    @with_auth
     def retrieve(self, request, pk=None):
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         serializer = PengaduanSerializer(pengaduan)
@@ -39,7 +42,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
             pengaduan.isi = isi
             pengaduan.lokasi = lokasi
             pengaduan.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=HttpStatus.HTTP_200_OK)
         
         if pengaduan.user.is_superuser :
             status = request.data['status']
@@ -47,16 +50,16 @@ class PengaduanViewSet(viewsets.ModelViewSet):
             pengaduan.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         
-        return Response({'error_message' : 'Status bukan UNRESOLVED'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error_message' : 'Status bukan UNRESOLVED'}, status=HttpStatus.HTTP_403_FORBIDDEN)
 
     def delete(self, request, pk=None) :
         pengaduan = get_object_or_404(self.queryset, pk=pk)
 
         if pengaduan.Status.UNRESOLVED :
             pengaduan.delete()
-            return Response(status=status.HTTP_200_OK)
+            return Response(status=HttpStatus.HTTP_200_OK)
         
-        return Response({'error_message' : 'Status bukan UNRESOLVED'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error_message' : 'Status bukan UNRESOLVED'}, status=HttpStatus.HTTP_403_FORBIDDEN)
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
