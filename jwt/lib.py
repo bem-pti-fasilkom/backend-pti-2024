@@ -1,11 +1,11 @@
 from django.http import JsonResponse
 
-def with_auth(handler):
+def sso_authenticated(handler):
     """
     USAGE
 
-    ```python
-    @with_auth
+    ```
+    @sso_authenticated
     def my_view(self, request):
         user = request.sso_user
         return JsonResponse({"message": "Hello, world!"})

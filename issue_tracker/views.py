@@ -5,13 +5,13 @@ from django.contrib.auth.models import User
 
 from rest_framework.response import Response
 from rest_framework import viewsets, status as HttpStatus
-from jwt.lib import with_auth
+from jwt.lib import sso_authenticated
 
 class PengaduanViewSet(viewsets.ModelViewSet):
     serializer_class = PengaduanSerializer
     queryset = Pengaduan.objects.all()
 
-    @with_auth
+    @sso_authenticated
     def retrieve(self, request, pk=None):
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         serializer = PengaduanSerializer(pengaduan)
