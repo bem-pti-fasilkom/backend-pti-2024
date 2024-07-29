@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "rest_framework",
     # list user created apps here
     "issue_tracker",
+    "jwt"
 ]
 
 MIDDLEWARE = [
@@ -52,8 +53,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.RemoteUserMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "jwt.middleware.SSOJwtMiddlware",
 ]
-
 
 ROOT_URLCONF = "backend_pti.urls"
 
