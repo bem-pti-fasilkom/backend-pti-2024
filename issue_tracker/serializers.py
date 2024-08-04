@@ -11,6 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
 class PengaduanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pengaduan
+        # TODO: Sinkronisasi dengan model Pengaduan
         fields = [
             "id",
             "anonymous",
@@ -26,10 +27,12 @@ class PengaduanSerializer(serializers.ModelSerializer):
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
+        # TODO: Sinkronisasi dengan model Like
         fields = ["id", "akun_sso", "pengaduan"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
+        # TODO: Sinkronisasi dengan model Comment
         fields = ["id", "author", "isi", "pengaduan"]

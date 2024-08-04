@@ -12,7 +12,7 @@ class Pengaduan(models.Model):
 
     anonymous = models.BooleanField()
 
-    # TODO: Let user be identified by SSO account
+    # TODO: Gunakan model user SSO
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="pengaduan", null=True
     )
@@ -28,6 +28,7 @@ class Pengaduan(models.Model):
 
 
 class Like(models.Model):
+    # TODO: Gunakan model user SSO
     akun_sso = models.URLField()
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="likes"
@@ -35,6 +36,7 @@ class Like(models.Model):
 
 
 class Comment(models.Model):
+    # TODO: Gunakan model user SSO
     author = models.CharField(max_length=100, null=True, blank=True)
     isi = models.TextField()
     pengaduan = models.ForeignKey(
