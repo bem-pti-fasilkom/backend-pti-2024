@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 
 
+# TODO: Buat sistem history update status pengaduan
 class Pengaduan(models.Model):
     class Status(models.TextChoices):
         UNRESOLVED = "U", _("Unresolved")

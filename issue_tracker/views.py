@@ -162,6 +162,10 @@ class PengaduanViewSet(viewsets.ModelViewSet):
             {"error_message": "User tidak terdaftar"}, status=status.HTTP_403_FORBIDDEN
         )
 
+    # TODO: Implementasi filter berdasarkan pengaduan yang pernah dikomentari
+
+    # TODO: Implementasi filter berdasarkan pengaduan yang pernah di-like
+
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
