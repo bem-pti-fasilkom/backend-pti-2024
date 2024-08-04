@@ -28,11 +28,11 @@ class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         # TODO: Sinkronisasi dengan model Like
-        fields = ["id", "akun_sso", "pengaduan"]
+        fields = ["id", "user", "pengaduan"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         # TODO: Sinkronisasi dengan model Comment
-        fields = ["id", "author", "isi", "pengaduan"]
+        fields = ["id", "user", "isi", "pengaduan"]

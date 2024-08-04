@@ -13,11 +13,7 @@ class Pengaduan(models.Model):
 
     anonymous = models.BooleanField()
 
-    # TODO: Gunakan model user SSO
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="pengaduan", null=True
-    )
-
+    user = models.CharField(max_length=600)
     judul = models.CharField(max_length=100)
     status = models.CharField(
         max_length=2, choices=Status.choices, default=Status.UNRESOLVED
@@ -29,16 +25,14 @@ class Pengaduan(models.Model):
 
 
 class Like(models.Model):
-    # TODO: Gunakan model user SSO
-    akun_sso = models.URLField()
+    user = models.CharField(max_length=600)
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="likes"
     )
 
 
 class Comment(models.Model):
-    # TODO: Gunakan model user SSO
-    author = models.CharField(max_length=100, null=True, blank=True)
+    user = models.CharField(max_length=600, null=True, blank=True)
     isi = models.TextField()
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="comments"
