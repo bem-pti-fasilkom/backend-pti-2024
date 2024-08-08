@@ -75,7 +75,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         user = request.sso_user
         if filter_type == 'liked':
             # Mengambil pengaduan yang disukai oleh user melalui model Like
-            pengaduan = Like.objects.filter(akun_sso='akun_sso').values('pengaduan')
+            pengaduan = Like.objects.filter(akun_sso=user).values('pengaduan')
         elif filter_type == 'commented':
             # Mengambil pengaduan yang memiliki komentar dari user melalui model Comment
             pengaduan = Comment.objects.filter(author=user.nama).values('pengaduan')
