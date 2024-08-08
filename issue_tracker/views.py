@@ -4,7 +4,7 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-
+from jwt.lib import sso_authenticated
 
 class PengaduanViewSet(viewsets.ModelViewSet):
     serializer_class = PengaduanSerializer
@@ -69,9 +69,18 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         
     @action(detail=False, methods=['get'], url_path='filter', url_name='filter')
     # Hanya dapat melihat pengaduan yang dimiliki jika sudah login
+    @sso_authenticated
     def filter(self, request):
-        user = request.user.id
-        pengaduan = Pengaduan.objects.filter(user=user)
+        filter_type = request.filter_type
+        user = request.sso_user
+        if filter_type == 'liked':
+            # Mengambil pengaduan yang disukai oleh user melalui model Like
+            pengaduan = Like.objects.filter(akun_sso='akun_sso').values('pengaduan')
+        elif filter_type == 'commented':
+            # Mengambil pengaduan yang memiliki komentar dari user melalui model Comment
+            pengaduan = Comment.objects.filter(author=user.nama).values('pengaduan')
+        else:
+            pengaduan = Pengaduan.objects.filter(user=user)
         serializer = PengaduanSerializer(pengaduan, many=True)
         return Response(serializer.data)
     
