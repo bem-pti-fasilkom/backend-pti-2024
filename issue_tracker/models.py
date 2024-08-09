@@ -32,15 +32,3 @@ class Comment(models.Model):
 
 
 # TODO: Buat sistem history update status pengaduan
-class StatusUpdate(models.Model):
-    class Status(models.TextChoices):
-        UNRESOLVED = "U", _("Unresolved")
-        RESOLVED = "RS", _("Resolved")
-        REPORTED = "RP", _("Reported")
-
-    status = models.CharField(choices=Status.choices, max_length=2)
-    pengaduan = models.ForeignKey(
-        Pengaduan, on_delete=models.CASCADE, related_name="status_updates"
-    )
-    comment = models.TextField()
-    createdAt = models.DateTimeField(auto_now_add=True)
