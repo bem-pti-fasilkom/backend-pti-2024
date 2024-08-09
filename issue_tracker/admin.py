@@ -5,9 +5,8 @@ from .models import Pengaduan
 class PengaduanModelAdmin(admin.ModelAdmin):
     list_display = [
         "anonymous",
-        "user",
+        "npm",
         "judul",
-        "status",
         "isi",
         "lokasi",
         "tanggal_post",

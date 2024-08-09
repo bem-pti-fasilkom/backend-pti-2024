@@ -4,20 +4,12 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 
 
-# TODO: Buat sistem history update status pengaduan
 class Pengaduan(models.Model):
-    class Status(models.TextChoices):
-        UNRESOLVED = "U", _("Unresolved")
-        RESOLVED = "RS", _("Resolved")
-        REPORTED = "RP", _("Reported")
 
     anonymous = models.BooleanField()
 
-    user = models.CharField(max_length=600)
+    npm = models.CharField(max_length=10)
     judul = models.CharField(max_length=100)
-    status = models.CharField(
-        max_length=2, choices=Status.choices, default=Status.UNRESOLVED
-    )
     isi = models.TextField()
     lokasi = models.TextField(null=True)
     evidence = models.URLField(null=True)
@@ -25,15 +17,30 @@ class Pengaduan(models.Model):
 
 
 class Like(models.Model):
-    user = models.CharField(max_length=600)
+    npm = models.CharField(max_length=10)
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="likes"
     )
 
 
 class Comment(models.Model):
-    user = models.CharField(max_length=600, null=True, blank=True)
+    npm = models.CharField(max_length=10, null=True, blank=True)
     isi = models.TextField()
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="comments"
     )
+
+
+# TODO: Buat sistem history update status pengaduan
+class StatusUpdate(models.Model):
+    class Status(models.TextChoices):
+        UNRESOLVED = "U", _("Unresolved")
+        RESOLVED = "RS", _("Resolved")
+        REPORTED = "RP", _("Reported")
+
+    status = models.CharField(choices=Status.choices, max_length=2)
+    pengaduan = models.ForeignKey(
+        Pengaduan, on_delete=models.CASCADE, related_name="status_updates"
+    )
+    comment = models.TextField()
+    createdAt = models.DateTimeField(auto_now_add=True)

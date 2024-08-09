@@ -1,11 +1,11 @@
 from .models import *
 from rest_framework import serializers
 
-
+# User disini digunakan untuk admin
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "password"]
+        fields = ["id", "username", "email"]
 
 
 class PengaduanSerializer(serializers.ModelSerializer):
@@ -15,9 +15,8 @@ class PengaduanSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "anonymous",
-            "user",
+            "npm",
             "judul",
-            "status",
             "isi",
             "lokasi",
             "tanggal_post",
@@ -28,11 +27,11 @@ class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         # TODO: Sinkronisasi dengan model Like
-        fields = ["id", "user", "pengaduan"]
+        fields = ["id", "npm", "pengaduan"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         # TODO: Sinkronisasi dengan model Comment
-        fields = ["id", "user", "isi", "pengaduan"]
+        fields = ["id", "npm", "isi", "pengaduan"]

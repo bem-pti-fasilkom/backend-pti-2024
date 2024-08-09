@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 
-
 class PengaduanViewSet(viewsets.ModelViewSet):
     serializer_class = PengaduanSerializer
     queryset = Pengaduan.objects.all()
@@ -25,7 +24,6 @@ class PengaduanViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    # TODO: Implement auth
     def update(self, request, pk=None):
         # User biasa : Judul, isi, lokasi (status = unresolved)
         # Admin : Status
@@ -33,8 +31,8 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         serializer = PengaduanSerializer(pengaduan)
 
         if pengaduan.user.is_superuser:
-            status = request.data["status"]
-            pengaduan.status = status
+            status_pengaduan = request.data.get("status")
+            pengaduan.status = status_pengaduan
             pengaduan.save()
 
             # TODO: Resolve name conflict antara pengaduan.status dan restframework.status
