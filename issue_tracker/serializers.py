@@ -1,7 +1,7 @@
 from .models import *
 from rest_framework import serializers
 
-
+# Model User digunakan untuk admin, jangan dihapus
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -14,9 +14,8 @@ class PengaduanSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "anonymous",
-            "user",
+            "npm",
             "judul",
-            "status",
             "isi",
             "lokasi",
             "tanggal_post",
@@ -26,10 +25,10 @@ class PengaduanSerializer(serializers.ModelSerializer):
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
-        fields = ["id", "akun_sso", "pengaduan"]
+        fields = ["id", "npm", "pengaduan"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ["id", "author", "isi", "pengaduan"]
+        fields = ["id", "npm", "isi", "pengaduan"]
