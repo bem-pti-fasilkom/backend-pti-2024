@@ -75,17 +75,16 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         serializer = PengaduanSerializer(pengaduan, many=True)
         return Response(serializer.data)
     
-    def like(self, request, pk=None):
+    def like_pengaduan(self, request, pk=None):
         pengaduan = get_object_or_404(self.queryset, pk=pk)
-        
+
         # Check if the like already exists to toggle like/unlike
-        # Temporary implementation for 'akun_sso' field until authentication is done
-        pengaduan_like = Like.objects.get(akun_sso='akun_sso', pengaduan=pengaduan)
+        pengaduan_like = Like.objects.get(npm = request.sso_user.npm, pengaduan=pengaduan)
         if pengaduan_like.exists():
             pengaduan_like.delete()
             action = 'unliked'
         else:
-            Like.objects.create(akun_sso='akun_sso', pengaduan=pengaduan)
+            Like.objects.create(npm = request.sso_user.npm, pengaduan=pengaduan)
             action = 'liked'
         
         likes_count = Like.objects.filter(pengaduan=pengaduan).count()
@@ -94,13 +93,14 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     
     def add_comment(self, request, pk=None) :
         pengaduan = get_object_or_404(self.queryset, pk=pk)
+        user = request.sso_user
 
+        # TODO: change this
         if not pengaduan.anonymous:
-            author = request.user.username
             isi = request.data.get('isi')
-
+            user = request.sso_user
             if isi:
-                comment = Comment(author=author, isi=isi, pengaduan=pengaduan)
+                comment = Comment(npm=user.npm, isi=isi, pengaduan=pengaduan)
                 comment.save()
                 comment_serializer = CommentSerializer(comment)
                 return Response(comment_serializer.data, status=status.HTTP_201_CREATED)
@@ -112,7 +112,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     def edit_comment(self, request, pk=None) :
         comment = get_object_or_404(Comment, pk=pk)
 
-        if not comment.pengaduan.anonymous and comment.author == request.user.username:
+        if comment.npm == request.sso_user.npm:
             isi = request.data.get('isi')
             if isi:
                 comment.isi = isi
@@ -121,17 +121,15 @@ class PengaduanViewSet(viewsets.ModelViewSet):
                 return Response(comment_serializer.data, status=status.HTTP_200_OK)
             
             return Response({'error_message': 'Komentar tidak boleh kosong'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response({'error_message' : 'User tidak terdaftar'}, status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_403_FORBIDDEN)
     
     def delete_comment(self, request, pk=None) :
         comment = get_object_or_404(Comment, pk=pk)
 
-        if not comment.pengaduan.anonymous and comment.author == request.user.username:
+        if comment.npm == request.sso_user.npm:
             comment.delete()
             return Response(status=status.HTTP_200_OK)
-        
-        return Response({'error_message' : 'User tidak terdaftar'}, status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
