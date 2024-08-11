@@ -29,6 +29,7 @@ class Like(models.Model):
 
 
 class Comment(models.Model):
+    anonymous = models.BooleanField()
     npm = models.CharField(max_length=10)
     isi = models.TextField()
     pengaduan = models.ForeignKey(
