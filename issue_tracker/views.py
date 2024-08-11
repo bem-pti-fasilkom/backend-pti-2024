@@ -93,25 +93,25 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     
     def add_comment(self, request, pk=None) :
         pengaduan = get_object_or_404(self.queryset, pk=pk)
-        user = request.sso_user
-
-        # TODO: change this
-        if not pengaduan.anonymous:
-            isi = request.data.get('isi')
-            user = request.sso_user
-            if isi:
-                comment = Comment(npm=user.npm, isi=isi, pengaduan=pengaduan)
-                comment.save()
-                comment_serializer = CommentSerializer(comment)
-                return Response(comment_serializer.data, status=status.HTTP_201_CREATED)
-            
-            return Response({'error_message': 'Komentar tidak boleh kosong!'}, status=status.HTTP_400_BAD_REQUEST)
+        isi = request.data.get('isi')
         
-        return Response({'error_message' : 'User tidak terdaftar'}, status=status.HTTP_403_FORBIDDEN)
-    
+        if request.anonymous:
+            npm = request.sso_user.npm
+        else:
+            npm = None
+
+        if isi:
+            comment = Comment(npm=npm, isi=isi, pengaduan=pengaduan)
+            comment.save()
+            comment_serializer = CommentSerializer(comment)
+            return Response(comment_serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response({'error_message': 'Komentar tidak boleh kosong!'}, status=status.HTTP_400_BAD_REQUEST)
+        
     def edit_comment(self, request, pk=None) :
         comment = get_object_or_404(Comment, pk=pk)
 
+        # Under the assumption anonymous comments cannot be edited
         if comment.npm == request.sso_user.npm:
             isi = request.data.get('isi')
             if isi:
@@ -126,6 +126,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     def delete_comment(self, request, pk=None) :
         comment = get_object_or_404(Comment, pk=pk)
 
+        # Under the assumption anonymous comments cannot be deleted
         if comment.npm == request.sso_user.npm:
             comment.delete()
             return Response(status=status.HTTP_200_OK)
