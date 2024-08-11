@@ -36,10 +36,11 @@ class PengaduanViewSet(viewsets.ModelViewSet):
 
         if user.get("is_superuser") :
             status = request.data['status']
-            pengaduan.status = status
+            status_obj = get_object_or_404(StatusPengaduan, pk=status)
+            pengaduan.status = status_obj
             pengaduan.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        elif pengaduan.Status.UNRESOLVED :
+        elif pengaduan.status.status == StatusPengaduan.Status.UNRESOLVED :
             judul = request.data['judul']
             isi = request.data['isi']
             lokasi = request.data['lokasi']
@@ -65,7 +66,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
                 raise Exception("Anonymous tidak dapat menghapus pengaduan")
             elif pengaduan.user.id != user.get("id"):
                 raise Exception("User tidak memiliki akses untuk menghapus pengaduan")
-            elif not pengaduan.Status.UNRESOLVED: 
+            elif not pengaduan.status.status != StatusPengaduan.Status.UNRESOLVED: 
                 raise Exception("Status bukan unresolved")
             else:
                 pengaduan.delete()
