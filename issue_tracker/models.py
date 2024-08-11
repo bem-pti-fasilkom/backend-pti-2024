@@ -3,10 +3,10 @@ from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth.models import User
 
+
 class Pengaduan(models.Model):
 
     anonymous = models.BooleanField()
-
     npm = models.CharField(max_length=10)
     judul = models.CharField(max_length=100)
     isi = models.TextField()
@@ -23,6 +23,7 @@ class Like(models.Model):
 
 
 class Comment(models.Model):
+    anonymous = models.BooleanField()
     npm = models.CharField(max_length=10)
     isi = models.TextField()
     pengaduan = models.ForeignKey(
