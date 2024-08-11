@@ -26,13 +26,15 @@ class PengaduanViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
     
+    @sso_authenticated
     def update(self, request, pk=None) :
         # User biasa : Judul, isi, lokasi (status = unresolved)
         # Admin : Status
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         serializer = PengaduanSerializer(pengaduan)
+        user = request.sso_user
 
-        if pengaduan.user.is_superuser :
+        if user.get("is_superuser") :
             status = request.data['status']
             pengaduan.status = status
             pengaduan.save()
