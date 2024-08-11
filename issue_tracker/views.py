@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 
+from jwt.lib import sso_authenticated
 
 class PengaduanViewSet(viewsets.ModelViewSet):
     serializer_class = PengaduanSerializer
@@ -49,15 +50,18 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         
         return Response({'error_message' : 'Anda bukan Admin atau status bukan UNRESOLVED'}, status=status.HTTP_403_FORBIDDEN)
 
+    @sso_authenticated
     def destroy(self, request, pk=None) :
         # Requirement Delete Pengaduan: 
         # 1. Pengaduan harus milik user
         # 2. Status unresolved
         try:
             pengaduan = get_object_or_404(self.queryset, pk=pk)
+            user = request.sso_user
+
             if pengaduan.anonymous:
                 raise Exception("Anonymous tidak dapat menghapus pengaduan")
-            elif pengaduan.user.id != request.data["user"]:
+            elif pengaduan.user.id != user.get("id"):
                 raise Exception("User tidak memiliki akses untuk menghapus pengaduan")
             elif not pengaduan.Status.UNRESOLVED: 
                 raise Exception("Status bukan unresolved")
