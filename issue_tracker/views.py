@@ -111,7 +111,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     def edit_comment(self, request, pk=None) :
         comment = get_object_or_404(Comment, pk=pk)
 
-        # Under the assumption anonymous comments cannot be edited
+        # Only verified user can edit comment
         if comment.npm == request.sso_user.npm:
             isi = request.data.get('isi')
             if isi:
@@ -126,8 +126,8 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     def delete_comment(self, request, pk=None) :
         comment = get_object_or_404(Comment, pk=pk)
 
-        # Under the assumption anonymous comments cannot be deleted
-        if comment.npm == request.sso_user.npm:
+        # Every user can delete comment
+        if request.anonymous or comment.npm == request.sso_user.npm:
             comment.delete()
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_403_FORBIDDEN)
