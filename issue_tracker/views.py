@@ -34,7 +34,9 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         serializer = PengaduanSerializer(pengaduan)
         user = request.sso_user
 
-        if pengaduan.status.status == StatusPengaduan.Status.UNRESOLVED and pengaduan.npm == user.get("npm"):
+        latest_status = pengaduan.status_updates.latest('timestamp')
+
+        if latest_status.status == StatusPengaduan.Status.UNRESOLVED and pengaduan.npm == user.get("npm"):
             judul = request.data['judul']
             isi = request.data['isi']
             lokasi = request.data['lokasi']
@@ -56,11 +58,13 @@ class PengaduanViewSet(viewsets.ModelViewSet):
             pengaduan = get_object_or_404(self.queryset, pk=pk)
             user = request.sso_user
 
+            latest_status = pengaduan.status_updates.latest('timestamp')
+
             if pengaduan.anonymous:
                 raise Exception("Anonymous tidak dapat menghapus pengaduan")
             elif pengaduan.npm != user.get("npm"):
                 raise Exception("User tidak memiliki akses untuk menghapus pengaduan")
-            elif not pengaduan.status.status != StatusPengaduan.Status.UNRESOLVED: 
+            elif not latest_status.status != StatusPengaduan.Status.UNRESOLVED: 
                 raise Exception("Status bukan unresolved")
             else:
                 pengaduan.delete()
