@@ -3,9 +3,15 @@ from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth.models import User
 
+class StatusPengaduan(models.Model) :
+    class Status(models.TextChoices) :
+        UNRESOLVED = "U", _("Unresolved")
+        RESOLVED = "RS", _("Resolved")
+        REPORTED = "RP", _("Reported")
+    status = models.CharField(max_length=2, choices=Status.choices, default=Status.UNRESOLVED)
+    comment =  models.TextField()
 
 class Pengaduan(models.Model):
-
     anonymous = models.BooleanField()
     npm = models.CharField(max_length=10)
     judul = models.CharField(max_length=100)
@@ -13,7 +19,7 @@ class Pengaduan(models.Model):
     lokasi = models.TextField(null=True)
     evidence = models.URLField(null=True)
     tanggal_post = models.DateTimeField(auto_now=True)
-
+    status = models.ForeignKey(StatusPengaduan, on_delete=models.CASCADE)
 
 class Like(models.Model):
     npm = models.CharField(max_length=10)
