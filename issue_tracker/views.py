@@ -94,16 +94,14 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     def add_comment(self, request, pk=None) :
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         isi = request.data.get('isi')
-        
-        if request.anonymous:
-            npm = request.sso_user.npm
-        else:
-            npm = None
 
         if isi:
-            comment = Comment(npm=npm, isi=isi, pengaduan=pengaduan)
+            comment = Comment(npm=request.sso_user.npm, isi=isi, pengaduan=pengaduan)
             comment.save()
             comment_serializer = CommentSerializer(comment)
+            if request.anonymous:
+                comment.anonymous = True
+                comment_serializer.data.get("user") = None
             return Response(comment_serializer.data, status=status.HTTP_201_CREATED)
         
         return Response({'error_message': 'Komentar tidak boleh kosong!'}, status=status.HTTP_400_BAD_REQUEST)
@@ -112,7 +110,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         comment = get_object_or_404(Comment, pk=pk)
 
         # Anonymous comments cannot be edited
-        if comment.npm == request.sso_user.npm:
+        if comment.npm == request.sso_user.npm and not comment.anonymous:
             isi = request.data.get('isi')
             if isi:
                 comment.isi = isi
@@ -126,7 +124,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
     def delete_comment(self, request, pk=None) :
         comment = get_object_or_404(Comment, pk=pk)
 
-        # Anonymous comments cannot be deleted
+        # All comments can be deleted (by the author)
         if comment.npm == request.sso_user.npm:
             comment.delete()
             return Response(status=status.HTTP_200_OK)
