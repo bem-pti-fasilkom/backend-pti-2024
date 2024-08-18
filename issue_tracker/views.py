@@ -33,10 +33,15 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         serializer = PengaduanSerializer(pengaduan)
         user = request.sso_user
+<<<<<<< HEAD
 
         latest_status = pengaduan.status_updates.latest('timestamp')
 
         if latest_status.status == StatusPengaduan.Status.UNRESOLVED and pengaduan.npm == user.get("npm"):
+=======
+        
+        if pengaduan.status.status == StatusPengaduan.Status.UNRESOLVED and pengaduan.npm == user.get("npm"):
+>>>>>>> 4fe511e079ac67dcdffe5b903f34cc2e281f0df3
             judul = request.data['judul']
             isi = request.data['isi']
             lokasi = request.data['lokasi']
@@ -49,6 +54,15 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         
         return Response({'error_message' : 'Anda bukan Admin atau status bukan UNRESOLVED'}, status=status.HTTP_403_FORBIDDEN)
 
+<<<<<<< HEAD
+=======
+        return Response(
+            {"error_message": "Anda bukan Admin atau status bukan UNRESOLVED"},
+            status=HTTPStatus.HTTP_403_FORBIDDEN,
+        )
+
+
+>>>>>>> 4fe511e079ac67dcdffe5b903f34cc2e281f0df3
     @sso_authenticated
     def destroy(self, request, pk=None) :
         # Requirement Delete Pengaduan: 
@@ -64,7 +78,11 @@ class PengaduanViewSet(viewsets.ModelViewSet):
                 raise Exception("Anonymous tidak dapat menghapus pengaduan")
             elif pengaduan.npm != user.get("npm"):
                 raise Exception("User tidak memiliki akses untuk menghapus pengaduan")
+<<<<<<< HEAD
             elif not latest_status.status != StatusPengaduan.Status.UNRESOLVED: 
+=======
+            elif not pengaduan.status.status != StatusPengaduan.Status.UNRESOLVED: 
+>>>>>>> 4fe511e079ac67dcdffe5b903f34cc2e281f0df3
                 raise Exception("Status bukan unresolved")
             else:
                 pengaduan.delete()
