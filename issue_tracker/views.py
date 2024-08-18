@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from jwt.lib import sso_authenticated
 from jwt.models import SSOAccount
 
+from jwt.lib import sso_authenticated
 
 class PengaduanViewSet(viewsets.ModelViewSet):
     serializer_class = PengaduanSerializer
@@ -26,22 +27,19 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         # pengaduan.__setattr__("tanggal_post", unformatted_date.strftime("%Y-%m-%d, %X"))
 
         return Response(serializer.data)
-
-    def update(self, request, pk=None):
+    
+    @sso_authenticated
+    def update(self, request, pk=None) :
         # User biasa : Judul, isi, lokasi (status = unresolved)
         # Admin : Status
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         serializer = PengaduanSerializer(pengaduan)
-
-        if pengaduan.user.is_superuser:
-            status = request.data["status"]
-            pengaduan.status = status
-            pengaduan.save()
-            return Response(serializer.data, status=HTTPStatus.HTTP_200_OK)
-        elif pengaduan.status == Pengaduan.Status.UNRESOLVED:
-            judul = request.data["judul"]
-            isi = request.data["isi"]
-            lokasi = request.data["lokasi"]
+        user = request.sso_user
+        
+        if pengaduan.status.status == StatusPengaduan.Status.UNRESOLVED and pengaduan.npm == user.get("npm"):
+            judul = request.data['judul']
+            isi = request.data['isi']
+            lokasi = request.data['lokasi']
 
             pengaduan.judul = judul
             pengaduan.isi = isi
@@ -54,17 +52,21 @@ class PengaduanViewSet(viewsets.ModelViewSet):
             status=HTTPStatus.HTTP_403_FORBIDDEN,
         )
 
-    def destroy(self, request, pk=None):
-        # Requirement Delete Pengaduan:
+
+    @sso_authenticated
+    def destroy(self, request, pk=None) :
+        # Requirement Delete Pengaduan: 
         # 1. Pengaduan harus milik user
         # 2. Status unresolved
         try:
             pengaduan = get_object_or_404(self.queryset, pk=pk)
+            user = request.sso_user
+
             if pengaduan.anonymous:
                 raise Exception("Anonymous tidak dapat menghapus pengaduan")
-            elif pengaduan.user.id != request.data["user"]:
+            elif pengaduan.npm != user.get("npm"):
                 raise Exception("User tidak memiliki akses untuk menghapus pengaduan")
-            elif not pengaduan.Status.UNRESOLVED:
+            elif not pengaduan.status.status != StatusPengaduan.Status.UNRESOLVED: 
                 raise Exception("Status bukan unresolved")
             else:
                 pengaduan.delete()
