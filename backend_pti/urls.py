@@ -18,6 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
+from .settings import ENVIRONMENT
 
 from issue_tracker import views
 
@@ -29,5 +30,5 @@ router.register("user", views.UserViewSet, basename="user")
 urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path("admin/", admin.site.urls),
-    path("", include(router.urls)),
+    path("staging/", include(router.urls)) if ENVIRONMENT == "development" else path("api/", include(router.urls)),
 ]

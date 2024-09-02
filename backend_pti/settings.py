@@ -28,9 +28,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ENVIRONMENT = env("ENVIRONMENT")
+DEBUG = ENVIRONMENT == "development"
 
-ALLOWED_HOSTS = ["bem.cs.ui.ac.id", "https://bem.cs.ui.ac.id", "http://bem.cs.ui.ac.id"]
+ALLOWED_HOSTS = ["127.0.0.1", "http://localhost:8000", "bem.cs.ui.ac.id", "https://bem.cs.ui.ac.id", "http://bem.cs.ui.ac.id"]
 
 
 # Application definition

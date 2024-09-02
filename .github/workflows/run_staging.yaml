@@ -36,5 +36,6 @@ jobs:
             -e DATABASE_USER='staging_owner' \
             -e DATABASE_PASS='DZgfh8pS5CeY' \
             -e DATABASE_HOST='ep-muddy-art-a1awil8x-pooler.ap-southeast-1.aws.neon.tech' \
-            -e DATABASE_PORT='5432'
+            -e DATABASE_PORT='5432' \
+            -e ENVIROMENT='development' 
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker ps
