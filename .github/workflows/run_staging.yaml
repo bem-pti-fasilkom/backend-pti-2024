@@ -1,7 +1,7 @@
-name: Run Docker Image (Staging)
+name: Run Docker Staging Image
 on:
   workflow_run:
-    workflows: ["Push Docker Image (Staging)"]
+    workflows: ["Push Docker Staging Image"]
     types:
       - completed
     branches:
