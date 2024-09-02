@@ -27,8 +27,8 @@ jobs:
             echo 'Connected to server PTI!'
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker ps
             gcloud auth print-access-token | sudo docker login -u oauth2accesstoken --password-stdin us-docker.pkg.dev
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker stop api
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker rm api
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker stop api-staging
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker rm api-staging
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker pull us-docker.pkg.dev/bem-pti-422515/gcr.io/api:latest
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker run -d --name api-staging -p 5000:8000 us-docker.pkg.dev/bem-pti-422515/gcr.io/api:latest \
             -e SECRET_KEY='h^z13$qr_s_wd65@gnj7a=xs7t05$w7q8!x_8zsld#' \

@@ -30,7 +30,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["bem.cs.ui.ac.id", "https://bem.cs.ui.ac.id", "http://bem.cs.ui.ac.id"]
 
 
 # Application definition
