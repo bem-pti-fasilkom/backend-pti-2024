@@ -1,0 +1,32 @@
+name: Run Docker Image
+on:
+  workflow_run:
+    workflows: ["Push Docker Image (Staging)"]
+    types:
+      - completed
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          proxy_host: kawung.cs.ui.ac.id
+          proxy_username: ${{ secrets.KAWUNG_USERNAME }}
+          proxy_passphrase: ${{ secrets.KAWUNG_PASSPHRASE }}
+          proxy_port: 12122
+          proxy_key: ${{ secrets.KAWUNG_KEY }}
+          script: |
+            echo 'Connected to server PTI!'
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker ps
+            gcloud auth print-access-token | sudo docker login -u oauth2accesstoken --password-stdin us-docker.pkg.dev
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker stop api
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker rm api
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker pull us-docker.pkg.dev/bem-pti-422515/gcr.io/api:latest
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker run -d --name api -p 5000:8000 us-docker.pkg.dev/bem-pti-422515/gcr.io/api:latest
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker ps
