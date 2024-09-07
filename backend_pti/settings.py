@@ -31,7 +31,12 @@ SECRET_KEY = env("SECRET_KEY")
 ENVIRONMENT = env("ENVIRONMENT")
 DEBUG = ENVIRONMENT == "development"
 
-ALLOWED_HOSTS = ["127.0.0.1", "http://localhost:8000", "bem.cs.ui.ac.id", "https://bem.cs.ui.ac.id", "http://bem.cs.ui.ac.id"]
+ALLOWED_HOSTS = [
+    "127.0.0.1", 
+    "http://localhost:8000", 
+    "backend-staging-937878544108.us-central1.run.app", 
+    "https://backend-staging-937878544108.us-central1.run.app"
+    ]
 
 
 # Application definition
