@@ -1,29 +1,25 @@
 from django.shortcuts import get_object_or_404
-from .serializers import *
-
+from .serializers import PengaduanSerializer, CommentSerializer
+from .models import Pengaduan, Like, Comment
+from jwt.lib import sso_authenticated
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from jwt.lib import sso_authenticated
-from jwt.models import SSOAccount
-
+from rest_framework.exceptions import PermissionDenied
 
 class PengaduanViewSet(viewsets.ModelViewSet):
     serializer_class = PengaduanSerializer
     queryset = Pengaduan.objects.all()
 
+    @sso_authenticated
     def retrieve(self, request, pk=None):
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         serializer = PengaduanSerializer(pengaduan)
+        print("Anonymous")
 
-        # If the user desires to stay anonymous, do not return user object
-        if pengaduan.anonymous :
-            pengaduan.user = None
-            pengaduan.save()
-
-        ## Used to format datetime into a more readable format
-        # unformatted_date = pengaduan.__getattribute__("tanggal_post")
-        # pengaduan.__setattr__("tanggal_post", unformatted_date.strftime("%Y-%m-%d, %X"))
+        if pengaduan.is_anonymous:
+            print("Anonymous")
+            serializer.data['author'] = 'Anonymous'
 
         return Response(serializer.data)
     
@@ -32,7 +28,6 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         # Admin : Status
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         serializer = PengaduanSerializer(pengaduan)
-
         if pengaduan.user.is_superuser :
             status = request.data['status']
             pengaduan.status = status
@@ -55,19 +50,16 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         # Requirement Delete Pengaduan: 
         # 1. Pengaduan harus milik user
         # 2. Status unresolved
-        try:
-            pengaduan = get_object_or_404(self.queryset, pk=pk)
-            if pengaduan.anonymous:
-                raise Exception("Anonymous tidak dapat menghapus pengaduan")
-            elif pengaduan.user.id != request.data["user"]:
-                raise Exception("User tidak memiliki akses untuk menghapus pengaduan")
-            elif not pengaduan.Status.UNRESOLVED: 
-                raise Exception("Status bukan unresolved")
-            else:
-                pengaduan.delete()
-                return Response(status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error_message' : f'{e}'}, status=status.HTTP_403_FORBIDDEN)
+        pengaduan = get_object_or_404(self.queryset, pk=pk)
+        if pengaduan.is_anonymous:
+            raise PermissionDenied("Anonymous tidak dapat menghapus pengaduan")
+        elif pengaduan.user.id != request.data["user"]:
+            raise PermissionDenied("User tidak memiliki akses untuk menghapus pengaduan")
+        elif not pengaduan.Status.UNRESOLVED: 
+            raise PermissionDenied("Status bukan unresolved")
+        else:
+            pengaduan.delete()
+            return Response(status=status.HTTP_200_OK)
         
     @action(detail=False, methods=['get'], url_path='filter', url_name='filter')
     # Hanya dapat melihat pengaduan yang dimiliki jika sudah login
@@ -77,6 +69,7 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         serializer = PengaduanSerializer(pengaduan, many=True)
         return Response(serializer.data)
     
+    @sso_authenticated
     def like(self, request, pk=None):
         pengaduan = get_object_or_404(self.queryset, pk=pk)
         
@@ -94,10 +87,11 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         
         return Response({'amount_of_likes': likes_count, 'action': action}, status=status.HTTP_200_OK)
     
+    @sso_authenticated
     def add_comment(self, request, pk=None) :
         pengaduan = get_object_or_404(self.queryset, pk=pk)
 
-        if not pengaduan.anonymous:
+        if not pengaduan.is_anonymous:
             author = request.user.username
             isi = request.data.get('isi')
 
@@ -111,10 +105,11 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         
         return Response({'error_message' : 'User tidak terdaftar'}, status=status.HTTP_403_FORBIDDEN)
     
+    @sso_authenticated
     def edit_comment(self, request, pk=None) :
         comment = get_object_or_404(Comment, pk=pk)
 
-        if not comment.pengaduan.anonymous and comment.author == request.user.username:
+        if not comment.pengaduan.is_anonymous and comment.author == request.user.username:
             isi = request.data.get('isi')
             if isi:
                 comment.isi = isi
@@ -126,15 +121,12 @@ class PengaduanViewSet(viewsets.ModelViewSet):
         
         return Response({'error_message' : 'User tidak terdaftar'}, status=status.HTTP_403_FORBIDDEN)
     
+    @sso_authenticated
     def delete_comment(self, request, pk=None) :
         comment = get_object_or_404(Comment, pk=pk)
 
-        if not comment.pengaduan.anonymous and comment.author == request.user.username:
+        if not comment.pengaduan.is_anonymous and comment.author == request.user.username:
             comment.delete()
             return Response(status=status.HTTP_200_OK)
         
         return Response({'error_message' : 'User tidak terdaftar'}, status=status.HTTP_403_FORBIDDEN)
-
-class UserViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
-    queryset = User.objects.all()

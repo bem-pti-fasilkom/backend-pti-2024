@@ -32,12 +32,16 @@ ENVIRONMENT = env("ENVIRONMENT")
 DEBUG = ENVIRONMENT == "development"
 
 ALLOWED_HOSTS = [
-    "127.0.0.1", 
+    "127.0.0.1",
+    "localhost",
     "http://localhost:8000", 
     "backend-staging-937878544108.us-central1.run.app", 
     "https://backend-staging-937878544108.us-central1.run.app"
     ]
-
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "https://backend-staging-937878544108.us-central1.run.app"
+]
 
 # Application definition
 
@@ -48,8 +52,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # rest framework to create REST APIs
     "rest_framework",
+
     # list user created apps here
     "issue_tracker.apps.IssueTrackerConfig",
     "jwt"
@@ -102,6 +106,10 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

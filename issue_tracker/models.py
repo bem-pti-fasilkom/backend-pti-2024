@@ -1,41 +1,63 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
-from django.contrib.auth.models import User
-
+from jwt.models import SSOAccount
+from django.utils import timezone
 
 class Pengaduan(models.Model):
     class Status(models.TextChoices):
-        UNRESOLVED = "U", _("Unresolved")
-        RESOLVED = "RS", _("Resolved")
-        REPORTED = "RP", _("Reported")
+        UNRESOLVED = "UNRESOLVED", _("Unresolved")
+        RESOLVED = "RESOLVED", _("Resolved")
+        REPORTED = "REPORTED", _("Reported")
 
-    anonymous = models.BooleanField()
+    is_anonymous = models.BooleanField(
+        default=False
+    )
 
-    # TODO: Let user be identified by SSO account
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="pengaduan", null=True
+    def __str__(self):
+        return f"{self.judul} by {self.author if not self.is_anonymous else 'Anonymous'}"
+
+    author = models.ForeignKey(
+        SSOAccount, on_delete=models.CASCADE, related_name="pengaduan"
     )
 
     judul = models.CharField(max_length=100)
     status = models.CharField(
-        max_length=2, choices=Status.choices, default=Status.UNRESOLVED
+        max_length=10, choices=Status.choices, default=Status.UNRESOLVED
     )
     isi = models.TextField()
-    lokasi = models.TextField(null=True)
-    evidence = models.URLField(null=True)
-    tanggal_post = models.DateTimeField(auto_now=True)
+    lokasi = models.TextField(blank=True)
+    evidence = models.URLField(blank=True)
+    tanggal_post = models.DateTimeField(editable=True, default=timezone.now)
+    
+    @property
+    def jumlah_like(self):
+        return self.likes.count()
+    
+    @property
+    def jumlah_komentar(self):
+        return self.comments.count()
+    
+    @property
+    def semua_komentar(self):
+        return self.comments.all()
 
 
 class Like(models.Model):
-    akun_sso = models.URLField()
+    akun_sso = models.ForeignKey(
+        SSOAccount, on_delete=models.CASCADE, related_name="likes"
+    )
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="likes"
     )
 
+    def __str__(self):
+        return f"{self.akun_sso} likes {self.pengaduan}"
+
 
 class Comment(models.Model):
-    author = models.CharField(max_length=100, null=True, blank=True)
+    author = models.ForeignKey(
+        SSOAccount, on_delete=models.CASCADE, related_name="comments"
+    )
     isi = models.TextField()
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="comments"

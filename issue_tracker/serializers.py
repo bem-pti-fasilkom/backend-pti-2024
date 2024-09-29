@@ -1,25 +1,29 @@
-from .models import *
+from .models import SSOAccount, Pengaduan, Like, Comment
 from rest_framework import serializers
 
 
-class UserSerializer(serializers.ModelSerializer):
+class SSOAccountSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ["id", "username", "email", "password"]
+        model = SSOAccount
+        fields = ["username", "npm", "full_name", "faculty", "short_faculty", "major", "program"]
 
 
 class PengaduanSerializer(serializers.ModelSerializer):
+    like_count = Pengaduan.objects.prefetch_related("issue_tracker_like").count()
+    author = SSOAccountSerializer()
     class Meta:
         model = Pengaduan
         fields = [
             "id",
-            "anonymous",
-            "user",
+            "is_anonymous",
             "judul",
             "status",
             "isi",
             "lokasi",
             "tanggal_post",
+            "jumlah_like",
+            "jumlah_komentar",
+            "author",
         ]
 
 
