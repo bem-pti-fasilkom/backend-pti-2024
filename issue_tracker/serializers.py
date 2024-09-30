@@ -10,20 +10,27 @@ class SSOAccountSerializer(serializers.ModelSerializer):
 
 class PengaduanSerializer(serializers.ModelSerializer):
     like_count = Pengaduan.objects.prefetch_related("issue_tracker_like").count()
-    author = SSOAccountSerializer()
+    author = serializers.SerializerMethodField()
+
+    def get_author(self, obj):
+        if obj.is_anonymous:
+            return None
+        return SSOAccountSerializer(obj.author).data
+
     class Meta:
         model = Pengaduan
+        read_only_fields = ["jumlah_like", "jumlah_komentar", "author", "status"]
         fields = [
             "id",
             "is_anonymous",
             "judul",
-            "status",
             "isi",
             "lokasi",
             "tanggal_post",
             "jumlah_like",
             "jumlah_komentar",
-            "author",
+            "status",
+            "author"
         ]
 
 

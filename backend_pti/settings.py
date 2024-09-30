@@ -40,7 +40,7 @@ ALLOWED_HOSTS = [
     ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
-    "backend-pti-staging-937878544108.us-central1.run.app"
+    "https://backend-pti-staging-937878544108.us-central1.run.app"
 ]
 
 # Application definition
