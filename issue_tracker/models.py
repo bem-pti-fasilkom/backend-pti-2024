@@ -41,7 +41,6 @@ class Pengaduan(models.Model):
     def semua_komentar(self):
         return self.comments.all()
 
-
 class Like(models.Model):
     akun_sso = models.ForeignKey(
         SSOAccount, on_delete=models.CASCADE, related_name="likes"

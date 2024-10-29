@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from .serializers import PengaduanSerializer, CommentSerializer
+from .serializers import PengaduanSerializer, CommentSerializer, SinglePengaduanSerializer
 from .models import Pengaduan, Like, Comment
 from jwt.lib import sso_authenticated
 from rest_framework.response import Response
@@ -19,7 +19,6 @@ from rest_framework.decorators import api_view
 - get all comment pengaduan terkait blm ada
 - evidence itu multivalue, asumsi gw dari api docs-nya msh pake single value
 - kategori gaada di api docs (ini di card pengaduan gaada kategori jg? cc @wi )
-- di riwayat ada button filter aduan_saya/disukai/dikomentari, itu pake be aja ga si (di luar modal filter)
 """
 
 @sso_authenticated
@@ -187,7 +186,7 @@ class CRPengaduanAPIView(APIView):
 class RUDPengaduanAPIView(APIView):
     def get(self, request, id=None):
         pengaduan = get_object_or_404(Pengaduan, pk=id)
-        return Response(PengaduanSerializer(pengaduan).data)
+        return Response(SinglePengaduanSerializer(pengaduan).data)
 
     @sso_authenticated
     def put(self, request, id=None):
