@@ -34,15 +34,13 @@ def sso_authenticated(handler, *args, **kwargs):
             request = args[0]
         else:
             request = args[1]
-        if request.sso_user is None and not kwargs["prevent_unauthorized_exception"]:
-            return JsonResponse({"error": "Unauthorized"}, status=401)
-        npm = request.sso_user.get("npm")
+        npm = request.sso_user.get("npm") if request.sso_user is not None else None
         sso_user = None
         try:
             sso_user = SSOAccount.objects.get(npm=npm)
         except SSOAccount.DoesNotExist:
             pass
-        if sso_user is None:
+        if sso_user is None and npm is not None:
             sso_user = SSOAccount.objects.create(
                 npm=npm,
                 full_name=request.sso_user["nama"],
