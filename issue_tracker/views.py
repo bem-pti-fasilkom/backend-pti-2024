@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from .serializers import PengaduanSerializer, CommentSerializer, SinglePengaduanSerializer
-from .models import Pengaduan, Like, Comment
+from .models import Pengaduan, Like, Comment, Evidence
 from jwt.lib import sso_authenticated
 from rest_framework.response import Response
 from rest_framework import viewsets, status
@@ -10,14 +10,9 @@ from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 """
-- endpoint untuk cek token user /self /check bebas
-- status pengaduan blm di retrun di resposne
 - logic filter belom bisa
 - request body update pengaduan belum ada
-- jumlah like dan jumlah komen tiap pengaduan belum ada di repsonse
-- isLiked oleh user terkait belum ada (tampilan user yg udah like pengaduan dan belum soalnya beda)
-- get all comment pengaduan terkait blm ada
-- evidence itu multivalue, asumsi gw dari api docs-nya msh pake single value
+- isLiked oleh user terkait belum ada (tampilan user yg udah like pengaduan dan belum soalnya beda) ~~~
 - kategori gaada di api docs (ini di card pengaduan gaada kategori jg? cc @wi )
 """
 
@@ -179,6 +174,11 @@ class CRPengaduanAPIView(APIView):
 
         if serializer.is_valid():
             pengaduan = serializer.save(author=sso_user)
+            evidences = request.data.get('evidence')
+            if type(evidences) is not list:
+                evidences = [evidences]
+            for evidence in evidences:
+                Evidence.objects.create(pengaduan=pengaduan, url=evidence)
             return Response(PengaduanSerializer(pengaduan).data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -240,7 +240,7 @@ class LikePengaduanAPIView(APIView):
         Like.objects.create(akun_sso=sso_user, pengaduan=pengaduan)
         return Response({'message': 'Like berhasil'}, status=status.HTTP_201_CREATED)
     
-class CRCommentAPIView(APIView):
+class CCommentAPIView(APIView):
     @sso_authenticated
     def post(self, request, id=None):
         sso_user = request.sso_user
@@ -258,3 +258,33 @@ class CRCommentAPIView(APIView):
             return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
         
         return Response({'error_message': 'Isi komentar tidak boleh kosong'}, status=status.HTTP_400_BAD_REQUEST)
+
+class UDCommentAPIView(APIView):
+    @sso_authenticated
+    def put(self, request, id=None):
+        if request.sso_user is None:
+            return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        comment = get_object_or_404(Comment, pk=id)
+        if comment.author != request.sso_user:
+            return Response({'error_message': 'Anda tidak memiliki akses untuk mengubah komentar ini'}, status=status.HTTP_403_FORBIDDEN)
+        
+        isi = request.data.get('isi')
+        if isi:
+            comment.isi = isi
+            comment.save()
+            return Response(CommentSerializer(comment).data, status=status.HTTP_200_OK)
+        
+        return Response({'error_message': 'Isi komentar tidak boleh kosong'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @sso_authenticated
+    def delete(self, request, id=None):
+        if request.sso_user is None:
+            return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        comment = get_object_or_404(Comment, pk=id)
+        if comment.author != request.sso_user:
+            return Response({'error_message': 'Anda tidak memiliki akses untuk menghapus komentar ini'}, status=status.HTTP_403_FORBIDDEN)
+        
+        comment.delete()
+        return Response(status=status.HTTP_200_OK)

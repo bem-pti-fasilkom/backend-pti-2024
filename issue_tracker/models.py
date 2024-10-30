@@ -26,7 +26,6 @@ class Pengaduan(models.Model):
     )
     isi = models.TextField()
     lokasi = models.TextField(blank=True)
-    evidence = models.URLField(blank=True)
     tanggal_post = models.DateTimeField(editable=True, default=timezone.now)
     
     @property
@@ -40,6 +39,15 @@ class Pengaduan(models.Model):
     @property
     def semua_komentar(self):
         return self.comments.all()
+
+class Evidence(models.Model):
+    pengaduan = models.ForeignKey(
+        Pengaduan, on_delete=models.CASCADE, related_name="evidence"
+    )
+    url = models.URLField()
+
+    def __str__(self):
+        return f"Evidence for {self.pengaduan}"
 
 class Like(models.Model):
     akun_sso = models.ForeignKey(

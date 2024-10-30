@@ -1,4 +1,4 @@
-from .models import SSOAccount, Pengaduan, Like, Comment
+from .models import SSOAccount, Pengaduan, Like, Comment, Evidence
 from rest_framework import serializers
 
 
@@ -9,9 +9,12 @@ class SSOAccountSerializer(serializers.ModelSerializer):
 
 
 class PengaduanSerializer(serializers.ModelSerializer):
-    like_count = Pengaduan.objects.prefetch_related("issue_tracker_like").count()
     author = serializers.SerializerMethodField()
     likes = serializers.SerializerMethodField()
+    evidence = serializers.SerializerMethodField()
+
+    def get_evidence(self, obj):
+        return EvidenceSerializer(obj.evidence.all(), many=True).data
 
     def get_likes(self, obj):
         return LikeSerializer(obj.likes.all(), many=True).data
@@ -23,7 +26,7 @@ class PengaduanSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pengaduan
-        read_only_fields = ["jumlah_like", "jumlah_komentar", "author", "status", "likes"]
+        read_only_fields = ["jumlah_like", "jumlah_komentar", "author", "status", "likes", "evidence"]
         fields = [
             "id",
             "is_anonymous",
@@ -36,6 +39,7 @@ class PengaduanSerializer(serializers.ModelSerializer):
             "status",
             "author",
             "likes",
+            "evidence",
         ]
 
         def to_representation(self, instance):
@@ -45,6 +49,11 @@ class PengaduanSerializer(serializers.ModelSerializer):
                 representation['comments'] = self.get_comments(instance)
             return representation
         
+class EvidenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Evidence
+        fields = ["id", "url", "pengaduan"]
+        
 class SinglePengaduanSerializer(PengaduanSerializer):
     comments = serializers.SerializerMethodField()
 
@@ -53,7 +62,7 @@ class SinglePengaduanSerializer(PengaduanSerializer):
 
     class Meta:
         model = Pengaduan
-        read_only_fields = ["jumlah_like", "jumlah_komentar", "author", "status", "likes"]
+        read_only_fields = ["jumlah_like", "jumlah_komentar", "author", "status", "likes", "evidence"]
         fields = [
             "id",
             "is_anonymous",
@@ -67,6 +76,7 @@ class SinglePengaduanSerializer(PengaduanSerializer):
             "author",
             "likes",
             "comments",
+            "evidence",
         ]
 
 
