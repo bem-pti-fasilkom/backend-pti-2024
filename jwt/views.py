@@ -6,6 +6,10 @@ from .lib import sso_authenticated, SSOUser
 @sso_authenticated
 def check_self(req: HttpRequest):
     user: SSOUser = req.sso_user
+    if not user:
+        return JsonResponse({
+            "error": "User not authenticated"
+        }, status= 401)
     return JsonResponse({
         "username": user.username,
         "npm": user.npm,
