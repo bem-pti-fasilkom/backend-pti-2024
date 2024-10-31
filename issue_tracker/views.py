@@ -187,4 +187,6 @@ class UDCommentAPIView(APIView):
             return Response({'error_message': 'Anda tidak memiliki akses untuk menghapus komentar ini'}, status=status.HTTP_403_FORBIDDEN)
         
         comment.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response({
+            'message': 'Komentar berhasil dihapus'
+        },status=status.HTTP_200_OK)

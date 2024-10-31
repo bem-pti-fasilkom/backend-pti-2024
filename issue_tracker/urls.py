@@ -8,6 +8,6 @@ urlpatterns = [
     path('pengaduan/commented/', views.get_my_commented_pengaduan, name='commented-pengaduan'),
     path('pengaduan/<int:id>/like/', views.LikePengaduanAPIView.as_view(), name='like-pengaduan'),
     path('pengaduan/<int:id>/', views.RUDPengaduanAPIView.as_view(), name='pengaduan_detail'),
-    path('comments/', views.CCommentAPIView.as_view(), name='add-pengaduan'),
+    path('pengaduan/<int:id>/comments/', views.CCommentAPIView.as_view(), name='add-comment'),
     path('comments/<int:id>/', views.UDCommentAPIView.as_view(), name='modify-comment'),
 ]

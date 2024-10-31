@@ -50,18 +50,23 @@ JWT Token didapatkan menggunakan SSO Server terpisah dengan format request berik
 
 Secara umum issue tracker memiliki REST API endpoint berikut:
 
-### a. Get All Pengaduan
+### Get All Pengaduan
 
 ```
-GET /pengaduan
+GET /pengaduan?${QUERY_PARAM}=${VALUE}
 ```
+
+Query Parameters:
+
+- status: `"UNRESOLVED" | "RESOLVED" | "REPORTED"`
+- judul: string
 
 Dengan response:
 
 - 200 OK
 
 ```typescript!=
-export interface SeluruhPengaduan {
+export interface GetAllPengaduanResponse {
     count:    number;
     next:     string;
     previous: null;
@@ -78,29 +83,82 @@ export interface Pengaduan {
     jumlah_like:     number;
     jumlah_komentar: number;
     status:          "UNRESOLVED" | "RESOLVED" | "REPORTED";
-    author:          Author | null; // null if post is anonymous
+    author:          null;
     likes:           Like[];
-    evidence:        string[];
+    comments:        Comment[];
+    evidence:        Evidence[];
 }
 
-export interface Author {
-    username:      string;
-    npm:           string;
-    full_name:     string;
-    faculty:       string;
-    short_faculty: string;
-    major:         string;
-    program:       string;
+export interface Comment {
+    id:        number;
+    author:    string;
+    isi:       string;
+    pengaduan: number;
+}
+
+export interface Evidence {
+    id:        number;
+    url:       string;
+    pengaduan: number;
 }
 
 export interface Like {
     id:        number;
-    akun_sso:  string; // npm
-    pengaduan: number; // id pengaduan
+    akun_sso:  string;
+    pengaduan: number;
 }
 ```
 
-### b. Create Pengaduan
+### Get Pengaduan By ID
+
+```
+GET /pengaduan/<int:id>
+```
+
+Dengan response:
+
+- 200 OK
+
+```typescript=
+export interface GetPengaduanResponse {
+    id:              number;
+    is_anonymous:    boolean;
+    judul:           string;
+    isi:             string;
+    lokasi:          string;
+    tanggal_post:    Date;
+    jumlah_like:     number;
+    jumlah_komentar: number;
+    status:          "UNRESOLVED" | "RESOLVED" | "REPORTED";
+    author:          null;
+    likes:           Like[];
+    comments:        Comment[];
+    evidence:        Evidence[];
+}
+
+export interface Comment {
+    id:        number;
+    author:    string;
+    isi:       string;
+    pengaduan: number;
+}
+
+export interface Evidence {
+    id:        number;
+    url:       string;
+    pengaduan: number;
+}
+
+export interface Like {
+    id:        number;
+    akun_sso:  string;
+    pengaduan: number;
+}
+```
+
+- 404 NOT FOUND
+
+### Create Pengaduan
 
 ```
 @sso_authenticated POST /pengaduan/
@@ -163,7 +221,7 @@ export interface Evidence {
 }
 ```
 
-### c. Update Pengaduan
+### Update Pengaduan
 
 ```
 @sso_authenticated PUT /pengaduan/<int:id>/
@@ -195,25 +253,29 @@ export interface UpdatePengaduanResponse {
     tanggal_post:    Date;
     jumlah_like:     number;
     jumlah_komentar: number;
-    status:          string;
-    author:          Author;
-    likes:           any[];
+    status:          "UNRESOLVED" | "RESOLVED" | "REPORTED";
+    author:          null;
+    likes:           Like[];
+    comments:        Comment[];
     evidence:        Evidence[];
 }
 
-export interface Author {
-    username:      string;
-    npm:           string;
-    full_name:     string;
-    faculty:       string;
-    short_faculty: string;
-    major:         string;
-    program:       string;
+export interface Comment {
+    id:        number;
+    author:    string;
+    isi:       string;
+    pengaduan: number;
 }
 
 export interface Evidence {
     id:        number;
     url:       string;
+    pengaduan: number;
+}
+
+export interface Like {
+    id:        number;
+    akun_sso:  string;
     pengaduan: number;
 }
 ```
@@ -238,7 +300,7 @@ Dengan response:
 
 - 404 NOT FOUND
 
-### d. Delete Pengaduan
+### Delete Pengaduan
 
 ```
 @sso_authenticated DELETE /pengaduan/<int:id>/
@@ -266,7 +328,7 @@ Dengan response:
 {"error_message": "Pengaduan ini sudah diajukan, tidak dapat dihapus"}
 ```
 
-### e. Like/Unlike Pengaduan
+### Like/Unlike Pengaduan
 
 ```
 @sso_authenticated POST /pengaduan/<int:id>/like/
@@ -282,6 +344,286 @@ Dengan response:
 
 ```json=
 {"message": "Unlike berhasil"}
+```
+
+- 401 UNAUTHORIZED
+
+```json=
+{"error_message": "Autentikasi Gagal"}
+```
+
+### Add Comment
+
+```
+@sso_authenticated POST /pengaduan/<int:id>/comments/
+```
+
+Dengan body:
+
+```typescript=
+export interface CreateCommentDTO {
+    isi: string;
+}
+```
+
+Dengan response:
+
+- 201 CREATED
+
+```typescript=
+export interface CreateCommentDTO {
+    id:        number;
+    author:    string;
+    isi:       string;
+    pengaduan: number; // id dari pengaduan
+}
+```
+
+- 401 UNAUTHORIZED
+
+```json=
+{"error_message": "Autentikasi Gagal"}
+```
+
+### Update Comment
+
+```
+@sso_authenticated PUT /comments/<int:id>/
+```
+
+Dengan body:
+
+```typescript=
+export interface CreateCommentDTO {
+    isi: string;
+}
+```
+
+- 200 OK
+
+```typescript=
+export interface CreateCommentDTO {
+    id:        number;
+    author:    string;
+    isi:       string;
+    pengaduan: number; // id dari pengaduan
+}
+```
+
+- 403 FORBIDDEN
+
+```json=
+{"error_message": "Anda tidak memiliki akses untuk mengubah komentar ini"}
+```
+
+- 401 UNAUTHORIZED
+
+```json=
+{"error_message": "Autentikasi Gagal"}
+```
+
+- 400 BAD REQUEST
+
+```json=
+{"error_message": "Isi komentar tidak boleh kosong"}
+```
+
+### Hapus Komentar
+
+```
+@sso_authenticated DELETE /comments/<int:id>
+```
+
+- 200 OK
+
+```json=
+{"message": "Komentar berhasil dihapus"}
+```
+
+- 401 UNAUTHORIZED
+
+```json=
+{"error_message": "Autentikasi Gagal"}
+```
+
+- 403 FORBIDDEN
+
+```json=
+{"error_message": "Anda tidak memiliki akses untuk menghapus komentar ini"}
+```
+
+### Lihat Pengaduan Pengguna
+
+```
+@sso_authenticated /pengaduan/histories/
+```
+
+Dengan response:
+
+- 200 OK
+
+```typescript=
+export interface PengaduanPenggunaResponse {
+    count:    number;
+    next:     string;
+    previous: null;
+    results:  Pengaduan[];
+}
+
+export interface Pengaduan {
+    id:              number;
+    is_anonymous:    boolean;
+    judul:           string;
+    isi:             string;
+    lokasi:          string;
+    tanggal_post:    Date;
+    jumlah_like:     number;
+    jumlah_komentar: number;
+    status:          "UNRESOLVED" | "RESOLVED" | "REPORTED";
+    author:          null;
+    likes:           Like[];
+    comments:        Comment[];
+    evidence:        Evidence[];
+}
+
+export interface Comment {
+    id:        number;
+    author:    string;
+    isi:       string;
+    pengaduan: number;
+}
+
+export interface Evidence {
+    id:        number;
+    url:       string;
+    pengaduan: number;
+}
+
+export interface Like {
+    id:        number;
+    akun_sso:  string;
+    pengaduan: number;
+}
+```
+
+- 401 UNAUTHORIZED
+
+```json=
+{"error_message": "Autentikasi Gagal"}
+```
+
+### Lihat Semua Pengaduan yang di-like
+
+```
+@sso_authenticated /pengaduan/liked/
+```
+
+Dengan response:
+
+- 200 OK
+
+```typescript=
+export interface LikedPengaduanResponse {
+    count:    number;
+    next:     string;
+    previous: null;
+    results:  Pengaduan[];
+}
+
+export interface Pengaduan {
+    id:              number;
+    is_anonymous:    boolean;
+    judul:           string;
+    isi:             string;
+    lokasi:          string;
+    tanggal_post:    Date;
+    jumlah_like:     number;
+    jumlah_komentar: number;
+    status:          "UNRESOLVED" | "RESOLVED" | "REPORTED";
+    author:          null;
+    likes:           Like[];
+    comments:        Comment[];
+    evidence:        Evidence[];
+}
+
+export interface Comment {
+    id:        number;
+    author:    string;
+    isi:       string;
+    pengaduan: number;
+}
+
+export interface Evidence {
+    id:        number;
+    url:       string;
+    pengaduan: number;
+}
+
+export interface Like {
+    id:        number;
+    akun_sso:  string;
+    pengaduan: number;
+}
+```
+
+- 401 UNAUTHORIZED
+
+```json=
+{"error_message": "Autentikasi Gagal"}
+```
+
+### Lihat Seluruh Pengaduan yang di-comment
+
+```
+@sso_authenticated /pengaduan/commented/
+```
+
+Dengan response:
+
+- 200 OK
+
+```typescript=
+export interface CommentedPengaduanResponse {
+    count:    number;
+    next:     string;
+    previous: null;
+    results:  Pengaduan[];
+}
+
+export interface Pengaduan {
+    id:              number;
+    is_anonymous:    boolean;
+    judul:           string;
+    isi:             string;
+    lokasi:          string;
+    tanggal_post:    Date;
+    jumlah_like:     number;
+    jumlah_komentar: number;
+    status:          "UNRESOLVED" | "RESOLVED" | "REPORTED";
+    author:          null;
+    likes:           Like[];
+    comments:        Comment[];
+    evidence:        Evidence[];
+}
+
+export interface Comment {
+    id:        number;
+    author:    string;
+    isi:       string;
+    pengaduan: number;
+}
+
+export interface Evidence {
+    id:        number;
+    url:       string;
+    pengaduan: number;
+}
+
+export interface Like {
+    id:        number;
+    akun_sso:  string;
+    pengaduan: number;
+}
 ```
 
 - 401 UNAUTHORIZED
