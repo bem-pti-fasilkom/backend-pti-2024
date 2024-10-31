@@ -2,6 +2,24 @@
 
 Berikut adalah dokumentasi untuk penggunaan REST API Backend PTI 2024
 
+- [API Documentation Backend PTI](#api-documentation-backend-pti)
+  - [Format API](#format-api)
+  - [1. Issue Tracker](#1-issue-tracker)
+    - [Get All Pengaduan](#get-all-pengaduan)
+    - [Get Pengaduan By ID](#get-pengaduan-by-id)
+    - [Create Pengaduan](#create-pengaduan)
+    - [Update Pengaduan](#update-pengaduan)
+    - [Delete Pengaduan](#delete-pengaduan)
+    - [Like/Unlike Pengaduan](#like-unlike-pengaduan)
+    - [Add Comment](#add-comment)
+    - [Update Comment](#update-comment)
+    - [Hapus Komentar](#hapus-komentar)
+    - [Lihat Pengaduan Pengguna](#lihat-pengaduan-pengguna)
+    - [Lihat Semua Pengaduan yang di-like](#lihat-semua-pengaduan-yang-di-like)
+    - [Lihat Seluruh Pengaduan yang di-comment](#lihat-seluruh-pengaduan-yang-di-comment)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 ## Format API
 
 API dipanggil dengan format sebagai berikut:
