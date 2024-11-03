@@ -69,3 +69,4 @@ class Comment(models.Model):
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="comments"
     )
+    tanggal_post = models.DateTimeField(editable=True, default=timezone.now)
