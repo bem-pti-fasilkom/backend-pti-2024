@@ -1,4 +1,4 @@
-from .models import SSOAccount, Pengaduan, Like, Comment, Evidence
+from .models import SSOAccount, Pengaduan, Like, Comment, Evidence, PengaduanStatusChange
 from rest_framework import serializers
 
 
@@ -40,6 +40,7 @@ class PengaduanSerializer(serializers.ModelSerializer):
             "author",
             "likes",
             "evidence",
+            "kategori"
         ]
 
         def to_representation(self, instance):
@@ -53,12 +54,22 @@ class EvidenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evidence
         fields = ["id", "url", "pengaduan"]
-        
+
+class PengaduanStatusChangeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PengaduanStatusChange
+        fields = ["id", "pengaduan", "old_status", "new_status", "admin", "tanggal"]
+        read_only_fields = ["admin", "tanggal", "old_status", "new_status"]
+
 class SinglePengaduanSerializer(PengaduanSerializer):
     comments = serializers.SerializerMethodField()
+    status_changes = serializers.SerializerMethodField()
 
     def get_comments(self, obj):
         return CommentSerializer(obj.comments.all(), many=True).data
+    
+    def get_status_changes(self, obj):
+        return PengaduanStatusChangeSerializer(obj.status_changes.all(), many=True).data
 
     class Meta:
         model = Pengaduan
@@ -77,6 +88,8 @@ class SinglePengaduanSerializer(PengaduanSerializer):
             "likes",
             "comments",
             "evidence",
+            "status_changes",
+            "kategori"
         ]
 
 

@@ -9,12 +9,6 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
-"""
-- logic filter belom bisa
-- request body update pengaduan belum ada
-- isLiked oleh user terkait belum ada (tampilan user yg udah like pengaduan dan belum soalnya beda) ~~~
-- kategori gaada di api docs (ini di card pengaduan gaada kategori jg? cc @wi )
-"""
 
 @sso_authenticated
 @api_view(['GET'])
@@ -57,6 +51,10 @@ class CRPengaduanAPIView(APIView):
         judul_query = request.query_params.get('judul')
         if judul_query:
             issues = issues.filter(judul__icontains=judul_query)
+
+        kategori_query = request.query_params.get('kategori')
+        if kategori_query:
+            issues = issues.filter(kategori=kategori_query)
         
         paginator = StandardResultsSetPagination()
         paginated_issues = paginator.paginate_queryset(issues, request)
