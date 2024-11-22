@@ -55,6 +55,14 @@ class CRPengaduanAPIView(APIView):
         kategori_query = request.query_params.get('kategori')
         if kategori_query:
             issues = issues.filter(kategori=kategori_query)
+
+        date_gt_query = request.query_params.get('date_gt')
+        if date_gt_query:
+            issues = issues.filter(tanggal_post__gte=date_gt_query)
+
+        date_lt_query = request.query_params.get('date_lt')
+        if date_lt_query:
+            issues = issues.filter(tanggal_post__lte=date_lt_query)
         
         paginator = StandardResultsSetPagination()
         paginated_issues = paginator.paginate_queryset(issues, request)
