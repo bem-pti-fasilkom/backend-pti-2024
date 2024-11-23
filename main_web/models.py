@@ -15,6 +15,7 @@ class Event(models.Model):
         PSDM = "PSDM", _("Pengembangan Sumber Daya Manusia")
         PTI = "PTI", _("Pengembangan Teknologi Informasi")
         SENBUD = "SENBUD", _("Seni dan Budaya")
+        SKI = "SKI", _("Satuan Kontrol Internal")
 
     img_url = models.CharField(max_length=255)
     biro_name = models.CharField(max_length=255, choices=Biro.choices)
