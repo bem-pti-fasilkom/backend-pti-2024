@@ -57,12 +57,14 @@ INSTALLED_APPS = [
 
     # list user created apps here
     "issue_tracker.apps.IssueTrackerConfig",
+    "main_web.apps.MainWebConfig",
     "jwt"
 ]
 
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.common.CommonMiddleware",

@@ -3,9 +3,7 @@ from .serializers import PengaduanSerializer, CommentSerializer, SinglePengaduan
 from .models import Pengaduan, Like, Comment, Evidence
 from jwt.lib import sso_authenticated
 from rest_framework.response import Response
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
@@ -38,7 +36,7 @@ def get_my_commented_pengaduan(request):
     return Response(serializer.data)
 
 class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 20
+    page_size = 24
     page_size_query_param = 'page_size'
 
 class CRPengaduanAPIView(APIView):
