@@ -103,5 +103,10 @@ class LikeSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        read_only_fields = ["author", "pengaduan", "tanggal_post"]
-        fields = ["id", "author", "isi", "pengaduan", "tanggal_post"]
+        read_only_fields = ["author", "pengaduan", "tanggal_post", "is_anonymous"]
+        fields = ["id", "author", "isi", "pengaduan", "tanggal_post", "is_anonymous"]
+
+    def get_author(self, obj):
+        if obj.is_anonymous:
+            return None
+        return SSOAccountSerializer(obj.author).data

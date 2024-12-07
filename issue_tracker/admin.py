@@ -50,12 +50,15 @@ class PengaduanStatusChangeModelAdmin(admin.ModelAdmin):
 class CommentModelAdmin(admin.ModelAdmin):
     verbose_name = "Comment"
     def get_fields(self, _, obj=None):
-        return [
+        fields = [
             "author",
             "isi",
             "pengaduan",
             "tanggal_post",
         ]
+        if obj and obj.is_anonymous:
+            fields.remove("author")
+            return fields
 
 
 admin.site.register(Pengaduan, PengaduanModelAdmin)

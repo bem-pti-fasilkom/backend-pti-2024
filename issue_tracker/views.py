@@ -35,6 +35,15 @@ def get_my_commented_pengaduan(request):
     serializer = PengaduanSerializer(pengaduan, many=True)
     return Response(serializer.data)
 
+@sso_authenticated
+@api_view(['GET'])
+def get_my_comment(request):
+    if request.sso_user is None:
+        return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
+    comments = Comment.objects.filter(author=request.sso_user)
+    serializer = CommentSerializer(comments, many=True)
+    return Response(serializer.data)
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 24
     page_size_query_param = 'page_size'
