@@ -10,4 +10,5 @@ urlpatterns = [
     path('pengaduan/<int:id>/', views.RUDPengaduanAPIView.as_view(), name='pengaduan_detail'),
     path('pengaduan/<int:id>/comments/', views.CCommentAPIView.as_view(), name='add-comment'),
     path('comments/<int:id>/', views.UDCommentAPIView.as_view(), name='modify-comment'),
+    path('comments/histories/', views.get_my_comment, name='my-comment'),
 ]

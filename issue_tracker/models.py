@@ -87,6 +87,9 @@ class Like(models.Model):
 
 
 class Comment(models.Model):
+    is_anonymous = models.BooleanField(
+        default=False
+    )
     author = models.ForeignKey(
         SSOAccount, on_delete=models.CASCADE, related_name="comments"
     )
