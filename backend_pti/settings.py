@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     # list user created apps here
     "issue_tracker.apps.IssueTrackerConfig",
     "main_web.apps.MainWebConfig",
+    "best_staff.apps.BestStaffConfig",
     "jwt"
 ]
 
