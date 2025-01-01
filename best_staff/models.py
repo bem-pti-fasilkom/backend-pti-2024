@@ -1,8 +1,15 @@
 from django.db import models
 from django.utils import timezone
+from jwt.lib import SSOAccount
 
 # Create your models here.
 class BEMMember(models.Model):
+    sso_account = models.OneToOneField(
+        SSOAccount,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    
     class Role(models.TextChoices):
         STAFF = "STAFF"
         BPH = "BPH"
