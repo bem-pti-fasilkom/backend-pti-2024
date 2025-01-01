@@ -1,10 +1,9 @@
 from django.shortcuts import render
-from .serializers import BEMMemberSerializer, EventSerializer
+from .serializers import BEMMemberSerializer, EventSerializer, SSOAccountSerializer
 from .models import BEMMember, Event
-from jwt.lib import sso_authenticated
+from jwt.lib import sso_authenticated, SSOAccount
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 
 # Create your views here.
@@ -14,12 +13,15 @@ def authenticate_staff(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
     
-    npm = request.sso_user.get('npm')
+    sso_account = SSOAccount.objects.get(username=request.sso_user)
+    serializer = SSOAccountSerializer(sso_account)
+    npm = serializer.data.get('npm')
+
     try:
         bem_member = BEMMember.objects.get(npm=npm)
         serializer = BEMMemberSerializer(bem_member)
         return Response(serializer.data)
-    except BEMMember.DoesNotExist:
+    except Exception:
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
 
 @sso_authenticated
