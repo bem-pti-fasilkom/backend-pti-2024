@@ -28,17 +28,25 @@ class BEMMember(models.Model):
         blank = True
     )
 
+    birdept = models.ForeignKey(
+        'Birdept',
+        on_delete = models.CASCADE,
+        null = True,
+        blank = True
+    )
+    
 class Event(models.Model):
     start = models.DateTimeField(editable=True, default=timezone.now)
     end = models.DateTimeField(editable=True)
-
-class NPM_Whitelist(models.Model):
-    npm = models.CharField(max_length=10, primary_key=True)
-    
-    def __str__(self):
-        return self.npm
 
 class Birdept(models.Model):
     nama = models.CharField(max_length=100)
     desc = models.CharField(max_length=100)
     galeri = models.JSONField(default=list)
+    
+class NPM_Whitelist(models.Model):
+    npm = models.CharField(max_length=10, primary_key=True)
+    birdept = models.ForeignKey(Birdept, on_delete=models.CASCADE, related_name='npm_whitelists')
+    
+    def __str__(self):
+        return self.npm

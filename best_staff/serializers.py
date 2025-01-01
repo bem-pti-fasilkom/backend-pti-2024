@@ -20,9 +20,9 @@ class SSOAccountSerializer(serializers.ModelSerializer):
 class NPMWhitelistSerializer(serializers.ModelSerializer):
     class Meta:
         model = NPM_Whitelist
-        fields = ["npm"]
+        fields = ["npm", "birdept"]
         
 class BirdeptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Birdept
-        fields = ["nama", "desc", "galeri"]
+        fields = ["nama", "desc", "galeri", "npm_whitelists"]
