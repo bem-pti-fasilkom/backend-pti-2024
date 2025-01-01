@@ -25,4 +25,5 @@ urlpatterns = [
     path("", include("issue_tracker.urls")),
     path("events/", include("main_web.urls")),
     path("auth/", include("jwt.urls")),
+    path("best_staff/", include("best_staff.urls"))
 ]
