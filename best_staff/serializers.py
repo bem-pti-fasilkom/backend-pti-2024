@@ -1,4 +1,4 @@
-from .models import BEMMember, Event
+from .models import BEMMember, Event, NPM_Whitelist, Birdept
 from rest_framework import serializers
 from jwt.lib import SSOAccount
 
@@ -16,3 +16,13 @@ class SSOAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = SSOAccount
         fields = ["username", "npm"]
+        
+class NPMWhitelistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NPM_Whitelist
+        fields = ["npm"]
+        
+class BirdeptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Birdept
+        fields = ["nama", "desc", "galeri"]
