@@ -10,25 +10,42 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import environ
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env()
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-_fo_@w_w^9^1!(m%ou#nj1)8nox%7z3w^xjvebfdu1mli^dgt0"
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ENVIRONMENT = env("ENVIRONMENT")
+DEBUG = ENVIRONMENT == "development"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "http://localhost:8000", 
+    "backend-staging-937878544108.us-central1.run.app", 
+    "backend-pti-staging-937878544108.us-central1.run.app",
+    "backend-pti-937878544108.us-central1.run.app"
+    ]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "https://backend-pti-staging-937878544108.us-central1.run.app",
+    "https://backend-pti-937878544108.us-central1.run.app"
+]
 
+CORS_ORIGIN_ALLOW_ALL = True
 
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -37,16 +54,22 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # rest framework to create REST APIs
     "rest_framework",
+    'corsheaders',
+
     # list user created apps here
-    "issue_tracker",
+    "issue_tracker.apps.IssueTrackerConfig",
+    "main_web.apps.MainWebConfig",
+    "best_staff.apps.BestStaffConfig",
     "jwt"
 ]
 
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -80,17 +103,25 @@ WSGI_APPLICATION = "backend_pti.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# TODO: Modify and tweak database as needed
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": env("DATABASE_NAME"),
+        "USER": env("DATABASE_USER"),
+        "PASSWORD": env("DATABASE_PASS"),
+        "HOST": env("DATABASE_HOST"),
+        "PORT": env("DATABASE_PORT"),
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 24
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -122,7 +153,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-
+STATIC_ROOT = BASE_DIR / "static"
 STATIC_URL = "static/"
 
 # Default primary key field type
