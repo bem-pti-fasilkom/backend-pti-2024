@@ -44,6 +44,9 @@ class Birdept(models.Model):
     desc = models.CharField(max_length=100)
     galeri = models.JSONField(default=list)
     
+    def __str__(self):
+        return self.nama
+    
 class NPM_Whitelist(models.Model):
     npm = models.CharField(max_length=10, primary_key=True)
     birdept = models.ForeignKey(Birdept, on_delete=models.CASCADE, related_name='npm_whitelists')

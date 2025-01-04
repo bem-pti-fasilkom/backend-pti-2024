@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import BEMMemberSerializer, EventSerializer, SSOAccountSerializer, NPMWhitelistSerializer, BirdeptSerializer
+from .serializers import BEMMemberSerializer, EventSerializer, NPMWhitelistSerializer, BirdeptSerializer
 from .models import BEMMember, Event, NPM_Whitelist, Birdept
 from jwt.lib import sso_authenticated, SSOAccount
 from rest_framework.response import Response
@@ -13,15 +13,12 @@ def authenticate_staff(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
     
-    sso_account = SSOAccount.objects.get(username=request.sso_user)
-    serializer = SSOAccountSerializer(sso_account)
-    npm = serializer.data.get('npm')
-
     try:
-        bem_member = BEMMember.objects.get(npm=npm)
+        sso_account = SSOAccount.objects.get(username=request.sso_user)
+        bem_member = BEMMember.objects.get(sso_account=sso_account)
         serializer = BEMMemberSerializer(bem_member)
         return Response(serializer.data)
-    except Exception:
+    except BEMMember.DoesNotExist:
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
 
 @sso_authenticated
@@ -33,6 +30,25 @@ def get_event(request):
     event = Event.objects.all()
     serializer = EventSerializer(event, many=True)
     return Response(serializer.data)
+
+@sso_authenticated
+@api_view(['GET'])
+def get_birdept_member(request):
+    if request.sso_user is None:
+        return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    try:
+        sso_account = SSOAccount.objects.get(username=request.sso_user)
+        current_user = BEMMember.objects.get(sso_account=sso_account)
+        birdept = current_user.birdept
+        birdept_members = BEMMember.objects.filter(birdept=birdept).exclude(sso_account=current_user.sso_account)
+        
+        serializer = BEMMemberSerializer(birdept_members, many=True)
+        return Response(serializer.data)
+    
+    except Exception:
+        # Adjust Error msg for this one (no info mw dikasi error msg apa)
+        return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
 
 @sso_authenticated
 @api_view(['GET'])
