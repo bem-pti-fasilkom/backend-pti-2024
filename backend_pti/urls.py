@@ -17,11 +17,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-
+from backend_pti.settings import DEBUG
 
 urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
-    path("admin/", admin.site.urls),
+    path("admin/" if not DEBUG else "staging/admin/", admin.site.urls),
     path("", include("issue_tracker.urls")),
     path("events/", include("main_web.urls")),
     path("auth/", include("jwt.urls")),

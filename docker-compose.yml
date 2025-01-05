@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8000"
+    environment:
+      SECRET_KEY: "h^z13$qr_s_wd65@gnj7a=xs7t05$w7q8!x_8zsld#"
+      DATABASE_NAME: "prod"
+      DATABASE_USER: "prod_owner"
+      DATABASE_PASS: "pgpass"
+      DATABASE_HOST: "db" # Points to the 'db' service
+      DATABASE_PORT: "5432"
+      DATABASE_URL: "postgresql://prod_owner:pgpass@db:5432/prod"
+      ENVIRONMENT: "production"
+    depends_on:
+      - db
+      - sso
+
+  app_staging:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8000"
+    environment:
+      SECRET_KEY: "h^z13$qr_s_wd65@gnj7a=xs7t05$w7q8!x_8zsld#"
+      DATABASE_NAME: "staging"
+      DATABASE_USER: "prod_owner"
+      DATABASE_PASS: "pgpass"
+      DATABASE_HOST: "db" # Points to the 'db' service
+      DATABASE_PORT: "5432"
+      DATABASE_URL: "postgresql://prod_owner:pgpass@db:5432/staging"
+      ENVIRONMENT: "development"
+    depends_on:
+      - db
+      - sso
+
+  sso:
+    image: ptimoet/sso-server:latest
+    ports:
+      - "5555:5555"
+    environment:
+      - PRODUCTION=true
+      - APP_URL=http://localhost:5555
+      - FRONTEND_APP_URL=http://localhost:5173
+      - ACCESS_TOKEN_SECRET_KEY=1234567890abcdefghijklmnopqrstuv
+      - REFRESH_TOKEN_SECRET_KEY=1234567890abcdefghijklmnopqrstuv
+      - PORT=5555
+      - PROD_APP_URL=https://bem.cs.ui.ac.id/
+
+  db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "prod"
+      POSTGRES_USER: "prod_owner"
+      POSTGRES_PASSWORD: "pgpass"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  db_data:

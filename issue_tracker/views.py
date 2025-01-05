@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
+from django.db.models import Count
 
 @sso_authenticated
 @api_view(['GET'])
@@ -70,6 +71,22 @@ class CRPengaduanAPIView(APIView):
         date_lt_query = request.query_params.get('date_lt')
         if date_lt_query:
             issues = issues.filter(tanggal_post__lte=date_lt_query)
+
+        sort_date_query = request.query_params.get('sort_date')
+        if sort_date_query == 'asc':
+            issues = issues.order_by('tanggal_post')
+        elif sort_date_query == 'desc':
+            issues = issues.order_by('-tanggal_post')
+        elif sort_date_query is not None:
+            return Response({'error_message': 'Invalid sort_date query'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        sort_like_query = request.query_params.get('sort_like')
+        if sort_like_query == 'asc':
+            issues = issues.annotate(like_count=Count('likes')).order_by('like_count')
+        elif sort_like_query == 'desc':
+            issues = issues.annotate(like_count=Count('likes')).order_by('-like_count')
+        elif sort_like_query is not None:
+            return Response({'error_message': 'Invalid sort_like query'}, status=status.HTTP_400_BAD_REQUEST)
         
         paginator = StandardResultsSetPagination()
         paginated_issues = paginator.paginate_queryset(issues, request)
