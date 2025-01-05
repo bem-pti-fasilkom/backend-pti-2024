@@ -12,11 +12,6 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = ["start", "end"]
         
-class SSOAccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SSOAccount
-        fields = ["username", "npm"]
-        
 class NPMWhitelistSerializer(serializers.ModelSerializer):
     class Meta:
         model = NPM_Whitelist
@@ -31,3 +26,8 @@ class VoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vote
         fields = ["voter", "voted", "vote_type", "created_at"]
+        
+class SSOAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SSOAccount
+        fields = ["username", "npm"]

@@ -1,11 +1,4 @@
 from django.shortcuts import get_object_or_404
-<<<<<<< HEAD
-from .serializers import *
-
-from rest_framework.response import Response
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-=======
 from .serializers import PengaduanSerializer, CommentSerializer, SinglePengaduanSerializer
 from .models import Pengaduan, Like, Comment, Evidence
 from jwt.lib import sso_authenticated
@@ -14,7 +7,6 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
->>>>>>> 7a995f2be53741eeef590757b3a180c9fa4da832
 
 @sso_authenticated
 @api_view(['GET'])

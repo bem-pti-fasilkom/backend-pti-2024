@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import BEMMemberSerializer, EventSerializer, SSOAccountSerializer, NPMWhitelistSerializer, BirdeptSerializer, VoteSerializer
+from .serializers import BEMMemberSerializer, EventSerializer, NPMWhitelistSerializer, BirdeptSerializer, VoteSerializer, SSOAccountSerializer
 from .models import BEMMember, Event, NPM_Whitelist, Birdept, Vote
 from jwt.lib import sso_authenticated, SSOAccount
 from rest_framework.response import Response
@@ -13,15 +13,12 @@ def authenticate_staff(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
     
-    sso_account = SSOAccount.objects.get(username=request.sso_user)
-    serializer = SSOAccountSerializer(sso_account)
-    npm = serializer.data.get('npm')
-
     try:
-        bem_member = BEMMember.objects.get(npm=npm)
+        sso_account = SSOAccount.objects.get(username=request.sso_user)
+        bem_member = BEMMember.objects.get(sso_account=sso_account)
         serializer = BEMMemberSerializer(bem_member)
         return Response(serializer.data)
-    except Exception:
+    except BEMMember.DoesNotExist:
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
 
 @sso_authenticated
@@ -33,6 +30,25 @@ def get_event(request):
     event = Event.objects.all()
     serializer = EventSerializer(event, many=True)
     return Response(serializer.data)
+
+@sso_authenticated
+@api_view(['GET'])
+def get_birdept_member(request):
+    if request.sso_user is None:
+        return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    try:
+        sso_account = SSOAccount.objects.get(username=request.sso_user)
+        current_user = BEMMember.objects.get(sso_account=sso_account)
+        birdept = current_user.birdept
+        birdept_members = BEMMember.objects.filter(birdept=birdept).exclude(sso_account=current_user.sso_account)
+        
+        serializer = BEMMemberSerializer(birdept_members, many=True)
+        return Response(serializer.data)
+    
+    except Exception:
+        # Adjust Error msg for this one (no info mw dikasi error msg apa)
+        return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
 
 @sso_authenticated
 @api_view(['GET'])
@@ -58,18 +74,16 @@ def get_birdept(request):
 @api_view(['POST'])
 def vote(request, voted_npm): 
     # get voter (BEMMember) object
-    sso_account = SSOAccount.objects.get(username=request.sso_user)
-    serializer = SSOAccountSerializer(sso_account)
-    npm = serializer.data.get('npm')
-    voter = BEMMember.objects.get(npm=npm)
+    voter_sso = SSOAccount.objects.get(username=request.sso_user)
+    voter = BEMMember.objects.get(npm=voter_sso.npm)
 
-    # handle just in case npm nya bukan anggota BEM
+    # handle just in case votednya bukan anggota BEM
     try:
-        voted = BEMMember.objects.get(npm=npm)
-    except Exception:
+        voted = BEMMember.objects.get(npm=voted_npm)
+    except BEMMember.DoesNotExist:
         return Response({'error_message': 'NPM tidak terdaftar sebagai anggota BEM'}, status=status.HTTP_403_FORBIDDEN)
 
-    if (voter == voted):
+    if (voter.npm == voted_npm):
         return Response({'error_message': 'Tidak bisa vote diri sendiri'}, status=status.HTTP_403_FORBIDDEN)
     
     # assign vote type
@@ -79,14 +93,22 @@ def vote(request, voted_npm):
         vote_type = "STAFF"
 
     # cek apakah voter sudah pernah vote dengan tipe itu atau belum (1 tipe 1 kali vote)
-    try:
-        vote = Vote.objects.get(voter=voter, vote_type=vote_type, voted_npm=voted_npm)
+    if (Vote.objects.get(voter=voter, vote_type=vote_type, voted_npm=voted_npm).exists()):
         return Response({'error_message': 'Anda sudah vote'}, status=status.HTTP_403_FORBIDDEN)
-    except Exception:
-        vote = Vote(voter=voter, vote_type=vote_type, voted=voted)
-        vote.save()
+        
+    vote = Vote.objects.create(voter=voter, vote_type=vote_type, voted=voted)
 
-    return Response({'message': 'Vote berhasil'}, status=status.HTTP_201_CREATED)
+    return Response(
+            {
+                'message': 'Vote berhasil',
+                'data': {
+                    'vote_type': vote_type,
+                    'voted_name': voted.sso_account.full_name,
+                    'timestamp': vote.created_at
+                }
+            }, 
+            status=status.HTTP_201_CREATED
+    )
 
 @sso_authenticated
 @api_view(['GET'])
