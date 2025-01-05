@@ -35,6 +35,9 @@ class BEMMember(models.Model):
         blank = True
     )
     
+    def __str__(self):
+        return f"{self.sso_account.username} - {self.role} - {self.birdept.nama}"
+    
 class Event(models.Model):
     start = models.DateTimeField(editable=True, default=timezone.now)
     end = models.DateTimeField(editable=True)

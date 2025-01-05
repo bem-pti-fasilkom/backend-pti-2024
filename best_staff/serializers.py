@@ -21,3 +21,8 @@ class BirdeptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Birdept
         fields = ["nama", "desc", "galeri", "npm_whitelists"]
+
+class SSOAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SSOAccount
+        fields = ["username", "npm"]
