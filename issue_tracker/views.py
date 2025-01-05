@@ -163,19 +163,6 @@ class LikePengaduanAPIView(APIView):
         Like.objects.create(akun_sso=sso_user, pengaduan=pengaduan)
         return Response({'message': 'Like berhasil'}, status=status.HTTP_201_CREATED)
     
-<<<<<<< HEAD
-    def like_pengaduan(self, request, pk=None):
-        pengaduan = get_object_or_404(self.queryset, pk=pk)
-
-        # Check if the like already exists to toggle like/unlike
-        pengaduan_like = Like.objects.get(npm = request.sso_user.npm, pengaduan=pengaduan)
-        if pengaduan_like.exists():
-            pengaduan_like.delete()
-            action = 'unliked'
-        else:
-            Like.objects.create(npm = request.sso_user.npm, pengaduan=pengaduan)
-            action = 'liked'
-=======
 class CCommentAPIView(APIView):
     @sso_authenticated
     def post(self, request, id=None):
@@ -190,7 +177,6 @@ class CCommentAPIView(APIView):
         if isi:
             comment = Comment.objects.create(author=author, isi=isi, pengaduan=pengaduan)
             return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
->>>>>>> 7a995f2be53741eeef590757b3a180c9fa4da832
         
         return Response({'error_message': 'Isi komentar tidak boleh kosong'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -212,50 +198,6 @@ class UDCommentAPIView(APIView):
         
         return Response({'error_message': 'Isi komentar tidak boleh kosong'}, status=status.HTTP_400_BAD_REQUEST)
     
-<<<<<<< HEAD
-    def add_comment(self, request, pk=None) :
-        pengaduan = get_object_or_404(self.queryset, pk=pk)
-        isi = request.data.get('isi')
-
-        if isi:
-            comment = Comment(npm=request.sso_user.npm, isi=isi, pengaduan=pengaduan)
-            comment.save()
-            comment_serializer = CommentSerializer(comment)
-            if request.anonymous:
-                comment.anonymous = True
-                comment_serializer.data.get("user") = None
-            return Response(comment_serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response({'error_message': 'Komentar tidak boleh kosong!'}, status=status.HTTP_400_BAD_REQUEST)
-        
-    def edit_comment(self, request, pk=None) :
-        comment = get_object_or_404(Comment, pk=pk)
-
-        # Anonymous comments cannot be edited
-        if comment.npm == request.sso_user.npm and not comment.anonymous:
-            isi = request.data.get('isi')
-            if isi:
-                comment.isi = isi
-                comment.save()
-                comment_serializer = CommentSerializer(comment)
-                return Response(comment_serializer.data, status=status.HTTP_200_OK)
-            
-            return Response({'error_message': 'Komentar tidak boleh kosong'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_403_FORBIDDEN)
-    
-    def delete_comment(self, request, pk=None) :
-        comment = get_object_or_404(Comment, pk=pk)
-
-        # All comments can be deleted (by the author)
-        if comment.npm == request.sso_user.npm:
-            comment.delete()
-            return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_403_FORBIDDEN)
-
-class UserViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
-=======
     @sso_authenticated
     def delete(self, request, id=None):
         if request.sso_user is None:
@@ -269,4 +211,3 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response({
             'message': 'Komentar berhasil dihapus'
         },status=status.HTTP_200_OK)
->>>>>>> 7a995f2be53741eeef590757b3a180c9fa4da832

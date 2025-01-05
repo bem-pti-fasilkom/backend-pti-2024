@@ -19,12 +19,6 @@ class PengaduanStatusChange(models.Model):
 
 
 class Pengaduan(models.Model):
-<<<<<<< HEAD
-
-    anonymous = models.BooleanField()
-    npm = models.CharField(max_length=10)
-    judul = models.CharField(max_length=100)
-=======
     class Status(models.TextChoices):
         UNRESOLVED = "UNRESOLVED", _("Unresolved")
         RESOLVED = "RESOLVED", _("Resolved")
@@ -55,7 +49,6 @@ class Pengaduan(models.Model):
     kategori = models.CharField(
         max_length=64, choices=Kaget.choices, default=Kaget.LAINNYA
     )
->>>>>>> 7a995f2be53741eeef590757b3a180c9fa4da832
     isi = models.TextField()
     lokasi = models.TextField(blank=True)
     tanggal_post = models.DateTimeField(editable=True, default=timezone.now)
@@ -82,13 +75,9 @@ class Evidence(models.Model):
         return f"Evidence for {self.pengaduan}"
 
 class Like(models.Model):
-<<<<<<< HEAD
-    npm = models.CharField(max_length=10)
-=======
     akun_sso = models.ForeignKey(
         SSOAccount, on_delete=models.CASCADE, related_name="likes"
     )
->>>>>>> 7a995f2be53741eeef590757b3a180c9fa4da832
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="likes"
     )
@@ -98,17 +87,12 @@ class Like(models.Model):
 
 
 class Comment(models.Model):
-<<<<<<< HEAD
-    anonymous = models.BooleanField()
-    npm = models.CharField(max_length=10)
-=======
     is_anonymous = models.BooleanField(
         default=False
     )
     author = models.ForeignKey(
         SSOAccount, on_delete=models.CASCADE, related_name="comments"
     )
->>>>>>> 7a995f2be53741eeef590757b3a180c9fa4da832
     isi = models.TextField()
     pengaduan = models.ForeignKey(
         Pengaduan, on_delete=models.CASCADE, related_name="comments"
