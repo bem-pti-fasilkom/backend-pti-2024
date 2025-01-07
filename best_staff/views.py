@@ -69,3 +69,86 @@ def get_birdept(request):
     birdept = Birdept.objects.all()
     serializer = BirdeptSerializer(birdept, many=True)
     return Response(serializer.data)
+
+@sso_authenticated
+@api_view(['POST'])
+def vote(request, voted_npm): 
+    # get voter (BEMMember) object
+    voter_sso = SSOAccount.objects.get(username=request.sso_user)
+    voter = BEMMember.objects.get(npm=voter_sso.npm)
+
+    # handle just in case votednya bukan anggota BEM
+    try:
+        voted = BEMMember.objects.get(npm=voted_npm)
+    except BEMMember.DoesNotExist:
+        return Response({'error_message': 'NPM tidak terdaftar sebagai anggota BEM'}, status=status.HTTP_403_FORBIDDEN)
+
+    if (voter.npm == voted_npm):
+        return Response({'error_message': 'Tidak bisa vote diri sendiri'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # assign vote type
+    if (voted.role == "KOOR"):
+        vote_type = "PI"
+    elif (voted.role == "BPH" or voted.role == "STAFF"):
+        vote_type = "STAFF"
+
+    # cek apakah voter sudah pernah vote dengan tipe itu atau belum (1 tipe 1 kali vote)
+    if (Vote.objects.get(voter=voter, vote_type=vote_type, voted_npm=voted_npm).exists()):
+        return Response({'error_message': 'Anda sudah vote'}, status=status.HTTP_403_FORBIDDEN)
+        
+    vote = Vote.objects.create(voter=voter, vote_type=vote_type, voted=voted)
+
+    return Response(
+            {
+                'message': 'Vote berhasil',
+                'data': {
+                    'vote_type': vote_type,
+                    'voted_name': voted.sso_account.full_name,
+                    'timestamp': vote.created_at
+                }
+            }, 
+            status=status.HTTP_201_CREATED
+    )
+
+@sso_authenticated
+@api_view(['GET'])
+# dengan asumsi 
+def get_vote(request, birdept):
+    birdept = Birdept.objects.get(nama=birdept)
+    votes = Vote.objects.filter(birdept=birdept)
+    birdept_pi = BEMMember.objects.filter(birdept=birdept, role="KOOR")
+    birdept_staff = BEMMember.objects.filter(birdept=birdept, role="STAFF")
+    birdept_bph = BEMMember.objects.filter(birdept=birdept, role="BPH")
+
+    responses = {
+        "total_votes": votes.count(),
+        "pi_votes": {
+            "details": [
+                {
+                    "name": pi.sso_account.full_name,
+                    "count": votes.filter(voted=pi).count()
+                } for pi in birdept_pi
+            ],
+            "total": votes.filter(vote_type="PI").count()
+        },
+        "staff_votes": {
+            "details": [
+                {
+                    "name": staff.sso_account.full_name,
+                    "count": votes.filter(voted=staff).count()
+                } for staff in birdept_staff
+            ],
+            "total": votes.filter(vote_type="STAFF").count()
+        },
+        "bph_votes": {
+            "details": [
+                {
+                    "name": bph.sso_account.full_name,
+                    "count": votes.filter(voted=bph).count()
+                } for bph in birdept_bph
+            ],
+            "total": votes.filter(vote_type="BPH").count()
+        }
+    }
+
+    return Response(responses)

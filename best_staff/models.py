@@ -56,3 +56,15 @@ class NPM_Whitelist(models.Model):
     
     def __str__(self):
         return self.npm
+
+class Vote(models.Model):
+    # Voter can vote for PI or BPH
+    voter = models.ForeignKey(BEMMember, on_delete=models.CASCADE)
+    voted = models.ForeignKey(BEMMember, on_delete=models.CASCADE, related_name='voted')
+    birdept = models.ForeignKey(Birdept, on_delete=models.CASCADE)
+
+    class vote_type(models.TextChoices):
+        PI = "PI", ("PI")
+        STAFF = "STAFF", ("STAFF")
+
+    created_at = models.DateTimeField(editable=True, default=timezone.now)

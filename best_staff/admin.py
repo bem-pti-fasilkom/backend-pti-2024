@@ -14,23 +14,37 @@ class BEMMemberForm(forms.ModelForm):
     class Meta:
         model = BEMMember
         fields = ['sso_account', 'role', 'img_url']
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        sso_account = cleaned_data.get('sso_account')
+        
+        if sso_account:
+            serializer = SSOAccountSerializer(sso_account)
+            npm_value = serializer.data.get('npm')
+            
+            try:
+                whitelist = NPM_Whitelist.objects.filter(npm=npm_value).first()
+                
+                if not whitelist:
+                    raise forms.ValidationError(_('NPM tidak terdaftar dalam whitelist'))
+                
+                self.whitelist = whitelist
+            except:
+                raise forms.ValidationError(_('Error'))
+        
+        return cleaned_data
     
     def save(self, commit=True):
         instance = super().save(commit=False)
-        serializer = SSOAccountSerializer(instance.sso_account)
-        npm_value = serializer.data.get('npm')
-        whitelist = NPM_Whitelist.objects.filter(npm=npm_value).first()
-        
-        if not whitelist:
-            raise ValidationError(_('NPM tidak terdaftar dalam whitelist'))
-        
-        instance.npm = whitelist
-        instance.birdept = whitelist.birdept  
+        instance.npm = self.whitelist
+        instance.birdept = self.whitelist.birdept
         
         if commit:
             instance.save()
+        
         return instance
-
+        
 @admin.register(BEMMember)
 class BEMMemberAdmin(admin.ModelAdmin):
     form = BEMMemberForm
