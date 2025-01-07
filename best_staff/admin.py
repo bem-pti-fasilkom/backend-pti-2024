@@ -1,13 +1,11 @@
 from django.contrib import admin
 from django import forms
-from .models import *
+from .models import BEMMember, Event, Birdept, NPM_Whitelist
 from .serializers import SSOAccountSerializer
-
 from django.contrib import admin
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from .models import *
 from .serializers import SSOAccountSerializer
 
 class BEMMemberForm(forms.ModelForm):
@@ -30,8 +28,8 @@ class BEMMemberForm(forms.ModelForm):
                     raise forms.ValidationError(_('NPM tidak terdaftar dalam whitelist'))
                 
                 self.whitelist = whitelist
-            except:
-                raise forms.ValidationError(_('Error'))
+            except Exception as e:
+                raise forms.ValidationError(_('Error: ') + str(e))
         
         return cleaned_data
     
