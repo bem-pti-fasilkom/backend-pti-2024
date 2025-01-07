@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from .serializers import BEMMemberSerializer, EventSerializer, NPMWhitelistSerializer, BirdeptSerializer
 from .models import BEMMember, Event, NPM_Whitelist, Birdept
 from jwt.lib import sso_authenticated, SSOAccount
@@ -21,12 +20,8 @@ def authenticate_staff(request):
     except BEMMember.DoesNotExist:
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
 
-@sso_authenticated
 @api_view(['GET'])
-def get_event(request):
-    if request.sso_user is None:
-        return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
-    
+def get_event(_):
     event = Event.objects.all()
     serializer = EventSerializer(event, many=True)
     return Response(serializer.data)
@@ -41,8 +36,9 @@ def get_birdept_member(request):
         sso_account = SSOAccount.objects.get(username=request.sso_user)
         current_user = BEMMember.objects.get(sso_account=sso_account)
         birdept = current_user.birdept
-        birdept_members = BEMMember.objects.filter(birdept=birdept).exclude(sso_account=current_user.sso_account)
-        
+        print(birdept.pk)
+        birdept_members = BEMMember.objects.filter(birdept=birdept.pk).exclude(sso_account=current_user.sso_account)
+
         serializer = BEMMemberSerializer(birdept_members, many=True)
         return Response(serializer.data)
     
@@ -60,7 +56,6 @@ def get_npm_whitelist(request):
     serializer = NPMWhitelistSerializer(npm_whitelist, many=True)
     return Response(serializer.data)
 
-@sso_authenticated
 @api_view(['GET'])
 def get_birdept(request):
     if request.sso_user is None:
