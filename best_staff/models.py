@@ -35,18 +35,18 @@ class BEMMember(models.Model):
         blank = True
     )
     
-    def __str__(self):
-        return f"{self.sso_account.username} - {self.role} - {self.birdept.nama}"
-    
 class Event(models.Model):
     start = models.DateTimeField(editable=True, default=timezone.now)
-    end = models.DateTimeField(editable=True)
+    end = models.DateTimeField(editable=True, default=timezone.now)
+
+    def __str__(self):
+        return self.start.strftime('%Y-%m-%d %H:%M:%S') + ' - ' + self.end.strftime('%Y-%m-%d %H:%M:%S')
 
 class Birdept(models.Model):
     nama = models.CharField(max_length=100)
     desc = models.CharField(max_length=100)
     galeri = models.JSONField(default=list)
-    
+
     def __str__(self):
         return self.nama
     

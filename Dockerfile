@@ -15,5 +15,5 @@ COPY --from=base /usr/local/bin/ /usr/local/bin/
 COPY . /app
 ENV PYTHONUNBUFFERED 1
 WORKDIR /app
-ENTRYPOINT ["gunicorn", "--bind", "0.0.0.0:8000", "backend_pti.wsgi"]
+ENTRYPOINT ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 backend_pti.wsgi"]
 EXPOSE 8000
