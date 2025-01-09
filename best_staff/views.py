@@ -66,8 +66,8 @@ def get_birdept(request):
     serializer = BirdeptSerializer(birdept, many=True)
     return Response(serializer.data)
 
-@sso_authenticated
 class VoteAPIView(APIView):
+    @sso_authenticated
     def post(self, request, voted_npm): 
         # get voter (BEMMember) object
         voter_sso = SSOAccount.objects.get(username=request.sso_user)
@@ -79,26 +79,19 @@ class VoteAPIView(APIView):
         except BEMMember.DoesNotExist:
             return Response({'error_message': 'NPM tidak terdaftar sebagai anggota BEM'}, status=status.HTTP_403_FORBIDDEN)
 
-        if (voter.npm == voted_npm):
+        if (voter.pk == voted_npm):
             return Response({'error_message': 'Tidak bisa vote diri sendiri'}, status=status.HTTP_403_FORBIDDEN)
-        
-        # assign vote type
-        if (voted.role == "KOOR"):
-            vote_type = "PI"
-        elif (voted.role == "BPH" or voted.role == "STAFF"):
-            vote_type = "STAFF"
 
         # cek apakah voter sudah pernah vote dengan tipe itu atau belum (1 tipe 1 kali vote)
-        if (Vote.objects.filter(voter=voter, vote_type=vote_type, voted_npm=voted_npm).exists()):
+        if (Vote.objects.filter(voter=voter, voted=voted_npm).exists()):
             return Response({'error_message': 'Anda sudah vote'}, status=status.HTTP_403_FORBIDDEN)
             
-        vote = Vote.objects.create(voter=voter, vote_type=vote_type, voted=voted)
+        vote = Vote.objects.create(voter=voter, voted=voted, birdept_id=voter.birdept_id)
 
         return Response(
                 {
                     'message': 'Vote berhasil',
                     'data': {
-                        'vote_type': vote_type,
                         'voted_name': voted.sso_account.full_name,
                         'timestamp': vote.created_at
                     }
@@ -106,47 +99,26 @@ class VoteAPIView(APIView):
                 status=status.HTTP_201_CREATED
         )
 
+    @sso_authenticated
     def get(self, request, birdept):
-        # validasi apakah birdept ada
         try:
-            birdept_obj = Birdept.objects.get(nama=birdept)
+            Birdept.objects.get(nama=birdept)
         except Birdept.DoesNotExist:
             return Response({'error_message': 'Birdept tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
 
         birdept = Birdept.objects.get(nama=birdept)
         votes = Vote.objects.filter(birdept=birdept)
-        birdept_pi = BEMMember.objects.filter(birdept=birdept, role="KOOR")
-        birdept_staff = BEMMember.objects.filter(birdept=birdept, role="STAFF")
-        birdept_bph = BEMMember.objects.filter(birdept=birdept, role="BPH")
+        member = BEMMember.objects.filter(birdept=birdept)
 
         responses = {
             "total_votes": votes.count(),
-            "pi_votes": {
+            "votes": {
                 "details": [
                     {
-                        "name": pi.sso_account.full_name,
-                        "count": votes.filter(voted=pi).count()
-                    } for pi in birdept_pi
-                ],
-                "total": votes.filter(vote_type="PI").count()
-            },
-            "staff_votes": {
-                "details": [
-                    {
-                        "name": staff.sso_account.full_name,
-                        "count": votes.filter(voted=staff).count()
-                    } for staff in birdept_staff
-                ],
-                "total": votes.filter(vote_type="STAFF").count()
-            },
-            "bph_votes": {
-                "details": [
-                    {
-                        "name": bph.sso_account.full_name,
-                        "count": votes.filter(voted=bph).count()
-                    } for bph in birdept_bph
-                ],
-                "total": votes.filter(vote_type="BPH").count()
+                        "name": m.sso_account.full_name,
+                        "count": votes.filter(voted=m).count()
+                    } for m in member
+                ]
             }
         }
 

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from jwt.lib import SSOAccount
+from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 class BEMMember(models.Model):
@@ -62,10 +63,9 @@ class Vote(models.Model):
     voter = models.ForeignKey(BEMMember, on_delete=models.CASCADE)
     voted = models.ForeignKey(BEMMember, on_delete=models.CASCADE, related_name='voted')
     birdept = models.ForeignKey(Birdept, on_delete=models.CASCADE)
-    
-    class vote_type(models.TextChoices):
-        PI = "PI", _("PI")
-        STAFF = "STAFF", _("STAFF")
+
+    def __str__(self):
+        return self.voter.sso_account.full_name + ' voted ' + self.voted.sso_account.full_name
 
     created_at = models.DateTimeField(editable=True, default=timezone.now)
     

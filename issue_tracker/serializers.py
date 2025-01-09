@@ -1,13 +1,8 @@
 from .models import SSOAccount, Pengaduan, Like, Comment, Evidence, PengaduanStatusChange
 from rest_framework import serializers
 
-<<<<<<< HEAD
-# Model User digunakan untuk admin, jangan dihapus
-class UserSerializer(serializers.ModelSerializer):
-=======
 
 class SSOAccountSerializer(serializers.ModelSerializer):
->>>>>>> 7a995f2be53741eeef590757b3a180c9fa4da832
     class Meta:
         model = SSOAccount
         fields = ["username", "npm", "full_name", "faculty", "short_faculty", "major", "program"]
@@ -34,12 +29,7 @@ class PengaduanSerializer(serializers.ModelSerializer):
         read_only_fields = ["jumlah_like", "jumlah_komentar", "author", "status", "likes", "evidence"]
         fields = [
             "id",
-<<<<<<< HEAD
-            "anonymous",
-            "npm",
-=======
             "is_anonymous",
->>>>>>> 7a995f2be53741eeef590757b3a180c9fa4da832
             "judul",
             "isi",
             "lokasi",
@@ -113,9 +103,6 @@ class LikeSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-<<<<<<< HEAD
-        fields = ["id", "npm", "isi", "pengaduan"]
-=======
         read_only_fields = ["author", "pengaduan", "tanggal_post", "is_anonymous"]
         fields = ["id", "author", "isi", "pengaduan", "tanggal_post", "is_anonymous"]
 
@@ -123,4 +110,3 @@ class CommentSerializer(serializers.ModelSerializer):
         if obj.is_anonymous:
             return None
         return SSOAccountSerializer(obj.author).data
->>>>>>> 7a995f2be53741eeef590757b3a180c9fa4da832
