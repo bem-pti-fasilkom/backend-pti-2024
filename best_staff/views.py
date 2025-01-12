@@ -17,7 +17,6 @@ def authenticate_staff(request):
         sso_account = SSOAccount.objects.get(username=request.sso_user)
         bem_member = BEMMember.objects.get(sso_account=sso_account)
         serializer = BEMMemberSerializer(bem_member)
-        print(serializer)
         return Response(serializer.data)
     except BEMMember.DoesNotExist:
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
