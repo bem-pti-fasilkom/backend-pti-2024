@@ -32,4 +32,4 @@ class BEMMemberSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = BEMMember
-        fields = ["role", "img_url"]
+        fields = ["sso_account", "role", "img_url"]
