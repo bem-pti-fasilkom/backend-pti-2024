@@ -14,9 +14,11 @@ def authenticate_staff(request):
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
     
     try:
+        print('test')
         sso_account = SSOAccount.objects.get(username=request.sso_user)
         bem_member = BEMMember.objects.get(sso_account=sso_account)
         serializer = BEMMemberSerializer(bem_member)
+        print('test')
         return Response(serializer.data)
     except BEMMember.DoesNotExist:
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
