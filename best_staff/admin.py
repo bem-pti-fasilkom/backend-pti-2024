@@ -1,12 +1,13 @@
 from django.contrib import admin
 from django import forms
-from .models import BEMMember, Event, Birdept, NPM_Whitelist
+from .models import BEMMember, Event, Birdept, NPM_Whitelist, Vote
 from .serializers import SSOAccountSerializer
 from django.contrib import admin
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from .serializers import SSOAccountSerializer
+from backend_pti.settings import DEBUG
 
 class BEMMemberForm(forms.ModelForm):
     class Meta:
@@ -43,6 +44,25 @@ class BEMMemberForm(forms.ModelForm):
         
         return instance
         
+if DEBUG:
+    @admin.register(Vote)
+    class VoteAdmin(admin.ModelAdmin):
+        list_display = ['voter', 'voted', 'created_at']
+        list_filter = ['voter', 'voted']
+        search_fields = ['voter', 'voted']
+        readonly_fields = ['created_at']
+        
+        def get_readonly_fields(self, request, obj=None):
+            if obj:
+                return ['voter', 'voted', 'created_at']
+            return ['created_at']
+        
+        def get_fields(self, request, obj=None):
+            fields = list(super().get_fields(request, obj))
+            if 'created_at' not in fields:
+                fields.append('created_at')
+            return fields
+
 @admin.register(BEMMember)
 class BEMMemberAdmin(admin.ModelAdmin):
     form = BEMMemberForm
