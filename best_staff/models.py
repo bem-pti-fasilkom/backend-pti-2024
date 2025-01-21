@@ -21,19 +21,10 @@ class BEMMember(models.Model):
     )
     
     img_url = models.URLField()
-    
-    npm = models.ForeignKey(
-        'NPM_Whitelist',
-        on_delete = models.CASCADE,
-        null = True,
-        blank = True
-    )
 
-    birdept = models.ForeignKey(
+    birdept = models.ManyToManyField(
         'Birdept',
-        on_delete = models.CASCADE,
-        null = True,
-        blank = True
+        blank=True
     )
     
 class Event(models.Model):
@@ -50,13 +41,7 @@ class Birdept(models.Model):
 
     def __str__(self):
         return self.nama
-    
-class NPM_Whitelist(models.Model):
-    npm = models.CharField(max_length=10, primary_key=True)
-    birdept = models.ForeignKey(Birdept, on_delete=models.CASCADE, related_name='npm_whitelists')
-    
-    def __str__(self):
-        return self.npm
+
     
 class Vote(models.Model):
     # Voter can vote for PI or BPH

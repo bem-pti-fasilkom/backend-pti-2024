@@ -1,4 +1,4 @@
-from .models import BEMMember, Event, NPM_Whitelist, Birdept, Vote
+from .models import BEMMember, Event, Birdept, Vote
 from rest_framework import serializers
 from jwt.lib import SSOAccount
 
@@ -6,11 +6,6 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ["start", "end"]
-        
-class NPMWhitelistSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NPM_Whitelist
-        fields = ["npm", "birdept"]
         
 class BirdeptSerializer(serializers.ModelSerializer):
     class Meta:

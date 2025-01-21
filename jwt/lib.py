@@ -42,7 +42,7 @@ def sso_authenticated(handler, *args, **kwargs):
             pass
         if sso_user is None and npm is not None:
             sso_user = SSOAccount.objects.create(
-                npm=npm,
+                npm=request.sso_user["user"],
                 full_name=request.sso_user["nama"],
                 username=request.sso_user["user"],
                 faculty=request.sso_user["jurusan"]["faculty"],
