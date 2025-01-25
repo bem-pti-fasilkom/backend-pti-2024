@@ -10,8 +10,8 @@ class SSOJwtMiddlware(MiddlewareMixin):
             return None
         try:
             jwt_token = auth_header.split(" ")[1]
-            # auth_response = requests.get("http://sso:5555/sso/check", headers={"Authorization": f"Bearer {jwt_token}"})
-            auth_response = requests.get("https://bem.cs.ui.ac.id/sso/check", headers={"Authorization": f"Bearer {jwt_token}"})
+            auth_response = requests.get("http://sso:5555/sso/check", headers={"Authorization": f"Bearer {jwt_token}"})
+            # auth_response = requests.get("https://bem.cs.ui.ac.id/sso/check", headers={"Authorization": f"Bearer {jwt_token}"})
             if auth_response.status_code == 200:
                 setattr(request, "sso_user", auth_response.json())
             else:
