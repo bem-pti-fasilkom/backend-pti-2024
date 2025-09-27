@@ -1,26 +1,50 @@
-# API Documentation Backend PTI
+# Backend PTI
 
-Berikut adalah dokumentasi untuk penggunaan REST API Backend PTI 2024
+Berikut adalah dokumentasi untuk isi repository backend PTI beserta dengan API backend PTI.
 
-- [API Documentation Backend PTI](#api-documentation-backend-pti)
-  - [Format API](#format-api)
-  - [1. Issue Tracker](#1-issue-tracker)
-    - [Get All Pengaduan](#get-all-pengaduan)
-    - [Get Pengaduan By ID](#get-pengaduan-by-id)
-    - [Create Pengaduan](#create-pengaduan)
-    - [Update Pengaduan](#update-pengaduan)
-    - [Delete Pengaduan](#delete-pengaduan)
-    - [Like/Unlike Pengaduan](#like-unlike-pengaduan)
-    - [Add Comment](#add-comment)
-    - [Update Comment](#update-comment)
-    - [Hapus Komentar](#hapus-komentar)
-    - [Lihat Pengaduan Pengguna](#lihat-pengaduan-pengguna)
-    - [Lihat Semua Pengaduan yang di-like](#lihat-semua-pengaduan-yang-di-like)
-    - [Lihat Seluruh Pengaduan yang di-comment](#lihat-seluruh-pengaduan-yang-di-comment)
+## Struktur Repositori
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+| File/Folder      | Deskripsi                                                |
+| ---------------- | -------------------------------------------------------- |
+| backend_pti/     | Folder project dari aplikasi Django                      |
+| best_staff/      | Folder app Best Staff (PSDM)                             |
+| issue_tracker/   | Folder app Issue Tracker (Adkesma)                       |
+| jwt/             | Folder app untuk management JWT based auth               |
+| main_web/        | Folder app untuk Web Utama BEM Fasilkom                  |
+| static/          | Folder berisi aset static untuk production release       |
+| .gitignore       | Berisi file dan folder yang diabaikan oleh Git           |
+| Dockerfile       | Dockerfile untuk mendefinisikan cara membangun container |
+|                  | backend-pti                                              |
+| README.md        | Dokumentasi mengenai repository dan aplikasi backend-pti |
+| docker-compose   | Docker Compose manifest file untuk mendefinisikan        |
+|                  | container eksternal, seperti DB dan server SSO           |
+| init.sql         | File SQL yang membuat database staging, yang akan        |
+|                  | dipanggil saat proses membangun container dengan         |
+|                  | Docker Compose                                           |
+| manage.py        | Entrypoint untuk memanggil command dengan                |
+|                  | `python manage.py` pada aplikasi backend-pti             |
+| requirements.txt | File dependency aplikasi backend-pti                     |
 
-## Format API
+## Dokumentasi API
+
+Berikut adalah dokumentasi untuk penggunaan REST API Backend PTI
+
+<!--toc:start-->
+
+- [1. Issue Tracker](#1-issue-tracker)
+  - [Get All Pengaduan](#get-all-pengaduan)
+  - [Get Pengaduan By ID](#get-pengaduan-by-id)
+  - [Create Pengaduan](#create-pengaduan)
+  - [Update Pengaduan](#update-pengaduan)
+  - [Delete Pengaduan](#delete-pengaduan)
+  - [Like/Unlike Pengaduan](#likeunlike-pengaduan)
+  - [Add Comment](#add-comment)
+  - [Update Comment](#update-comment)
+  - [Hapus Komentar](#hapus-komentar)
+  - [Lihat Pengaduan Pengguna](#lihat-pengaduan-pengguna)
+  - [Lihat Semua Pengaduan yang di-like](#lihat-semua-pengaduan-yang-di-like)
+  - [Lihat Seluruh Pengaduan yang di-comment](#lihat-seluruh-pengaduan-yang-di-comment)
+  <!--toc:end-->
 
 API dipanggil dengan format sebagai berikut:
 `/{BASE_URL}/{PATHNAME}`
