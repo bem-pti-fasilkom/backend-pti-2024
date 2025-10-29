@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
+from django.db.models import Count
+from datetime import datetime
 
 # Create your views here.
 @sso_authenticated
@@ -65,6 +67,77 @@ def get_all_statistics(_):
     }
 
     return Response(responses)
+
+@sso_authenticated
+@api_view(['GET'])
+def get_all_winners(self, request):
+    year = request.query_params.get("year")
+    month = request.query_params.get("month")
+
+    qs = Vote.objects.all()
+    if year and month:
+        try:
+            qs = qs.filter(created_at__year=int(year), created_at__month=int(month))
+        except ValueError:
+            return Response({"error_message": "year dan month harus berupa integer positif"})
+
+    else:
+        now = datetime.now()
+        qs = qs.filter(created_at__year=now.year, created_at__month=now.month)
+
+    counts = qs.values("birdept_id", "voted_id").annotate(votes=Count("id")).order_by("-votes") # list voted tiap birdept
+
+    totals = dict(qs.values("birdept_id").annotate(total=Count("id")).values_list("birdept_id", "total")) # total votes tiap birdept
+
+    result = {}
+    for row in counts:
+        b_id = row["birdept_id"]
+        m_id = row["voted_id"]
+        c = row["votes"]
+
+        if b_id not in result:
+            result[b_id] = {"top": c, "winners": [m_id]}
+        else:
+            if c > result[b_id]["top"]:
+                result[b_id] = {"top": c, "winners": [m_id]}
+            elif c == result[b_id]["top"]:
+                result[b_id]["winners"].append(m_id)
+
+
+    bir_map = dict(Birdept.objects.values_list("id", "nama"))
+    mem_map = {
+        m.pk: {
+            "npm": m.pk,
+            "name": m.sso_account.full_name,
+        }
+        for m in BEMMember.objects.select_related("sso_account")
+    }
+
+    data = []
+    for b_id, info in result.items():
+        winners = [
+            {
+                **mem_map.get(m_id, {"npm": None, "name": "(unknown)"}),
+                "votes": info["top"],
+            }
+            for m_id in info["winners"]
+        ]
+        data.append({
+            "birdept_id": b_id,
+            "birdept": bir_map.get(b_id, f"#{b_id}"),
+            "total_votes": totals.get(b_id, 0),
+            "top_votes": info["top"],
+            "tie": len(winners) > 1,
+            "winners": winners,
+        })
+
+    data.sort(key=lambda x: (x["birdept"] or ""))
+
+    return Response({
+        "filters": {"year": year, "month": month},
+        "count": len(data),
+        "results": data
+    })
 
 @api_view(['GET'])
 def get_birdept(request):
@@ -156,3 +229,4 @@ class VoteAPIView(APIView):
         }
 
         return Response(responses)
+    
