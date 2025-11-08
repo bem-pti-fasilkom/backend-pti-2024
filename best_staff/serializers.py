@@ -1,6 +1,6 @@
 from .models import BEMMember, Event, Birdept, Vote
 from rest_framework import serializers
-from jwt.lib import SSOAccount
+from jwt.models import SSOAccount
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,12 +10,12 @@ class EventSerializer(serializers.ModelSerializer):
 class BirdeptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Birdept
-        fields = ["nama", "desc", "galeri", "npm_whitelists"]
+        fields = ["nama", "desc", "galeri"]
 
 class VoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vote
-        fields = ["voter", "voted", "vote_type", "created_at"]
+        fields = ["voter", "voted", "birdept", "created_at"]
         
 class SSOAccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,3 +28,24 @@ class BEMMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = BEMMember
         fields = ["sso_account", "role", "img_url"]
+
+# tambahan serializer buat serialize output
+
+class VoteCount(serializers.Serializer):
+    name = serializers.CharField()
+    count = serializers.IntegerField()
+
+class VoteStatsOut(serializers.Serializer):
+    total_votes = serializers.IntegerField()
+    votes = serializers.JSONField()
+
+class AllStatisticsBirdept(serializers.Serializer):
+    name = serializers.CharField()
+    votes = VoteCount(many=True)
+
+class AllStatisticsOut(serializers.Serializer):
+    birdepts = AllStatisticsBirdept(many=True)
+
+class VoteCreateOut(serializers.Serializer):
+    message = serializers.CharField()
+    payload = serializers.JSONField()  
