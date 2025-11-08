@@ -1,4 +1,4 @@
-from .serializers import BEMMemberSerializer, EventSerializer, BirdeptSerializer, AllStatisticsOut, VoteCreateOut, VoteStatsOut
+from .serializers import BEMMemberSerializer, EventSerializer, BirdeptSerializer, AllStatisticsOut, VoteCreateOut, VoteStatsOut, AllWinnersOutSerializer
 from .models import BEMMember, Event, Birdept, Vote
 from jwt.lib import sso_authenticated, SSOAccount
 from rest_framework.response import Response
@@ -99,6 +99,14 @@ def get_all_statistics(_):
 
     return Response(responses)
 
+@extend_schema(
+    operation_id="best_staff_winners",
+    parameters=[
+        OpenApiParameter(name="year",  location=OpenApiParameter.QUERY, required=False, type=OpenApiTypes.INT),
+        OpenApiParameter(name="month", location=OpenApiParameter.QUERY, required=False, type=OpenApiTypes.INT),
+    ],
+    responses={200: AllWinnersOutSerializer, 400: OpenApiResponse(description="Invalid year/month"), 401: OpenApiResponse(description="Unauthorized")},
+)
 @sso_authenticated
 @api_view(['GET'])
 def get_all_winners(self, request):

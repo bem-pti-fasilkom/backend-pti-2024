@@ -49,3 +49,25 @@ class AllStatisticsOut(serializers.Serializer):
 class VoteCreateOut(serializers.Serializer):
     message = serializers.CharField()
     payload = serializers.JSONField()  
+
+class WinnerItemSerializer(serializers.Serializer):
+    npm = serializers.CharField(allow_null=True)
+    name = serializers.CharField()
+    votes = serializers.IntegerField()
+
+class WinnerRowSerializer(serializers.Serializer):
+    birdept_id = serializers.IntegerField()
+    birdept = serializers.CharField(allow_null=True)
+    total_votes = serializers.IntegerField()
+    top_votes = serializers.IntegerField()
+    tie = serializers.BooleanField()
+    winners = WinnerItemSerializer(many=True)
+
+class AllWinnersOutSerializer(serializers.Serializer):
+    class Filters(serializers.Serializer):
+        year = serializers.CharField(allow_null=True, required=False)
+        month = serializers.CharField(allow_null=True, required=False)
+
+    filters = Filters()
+    count = serializers.IntegerField()
+    results = WinnerRowSerializer(many=True)
