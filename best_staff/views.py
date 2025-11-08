@@ -252,7 +252,7 @@ class VoteAPIView(APIView):
         return Response(
                 {
                     'message': 'Vote berhasil',
-                    'data': {
+                    'payload': {
                         'voted_name': voted.sso_account.full_name,
                         'timestamp': vote.created_at
                     }
