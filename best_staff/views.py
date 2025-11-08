@@ -1,12 +1,23 @@
-from .serializers import BEMMemberSerializer, EventSerializer, BirdeptSerializer
+from .serializers import BEMMemberSerializer, EventSerializer, BirdeptSerializer, AllStatisticsOut, VoteCreateOut, VoteStatsOut
 from .models import BEMMember, Event, Birdept, Vote
 from jwt.lib import sso_authenticated, SSOAccount
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
+from rest_framework import serializers
+
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter, OpenApiResponse, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 
 # Create your views here.
+@extend_schema(
+    operation_id="best_staff_authenticate",
+    responses={
+        200: BEMMemberSerializer,
+        401: OpenApiResponse(description="Unauthorized"),
+    },
+)
 @sso_authenticated
 @api_view(['GET'])
 def authenticate_staff(request):
@@ -62,7 +73,11 @@ def get_birdept_member(request):
     )
 
     return Response(BEMMemberSerializer(members, many=True).data)
-    
+
+@extend_schema(
+    operation_id="best_staff_statistics_all",
+    responses=AllStatisticsOut,
+)
 @api_view(['GET'])
 def get_all_statistics(_):
     birdepts = Birdept.objects.all()
@@ -82,6 +97,10 @@ def get_all_statistics(_):
 
     return Response(responses)
 
+@extend_schema(
+    operation_id="best_staff_birdept_list",
+    responses=BirdeptSerializer(many=True),
+)
 @api_view(['GET'])
 def get_birdept(request):
     if request.sso_user is None:
@@ -92,6 +111,18 @@ def get_birdept(request):
     return Response(serializer.data)
 
 class VoteAPIView(APIView):
+    @extend_schema(
+        operation_id="best_staff_vote_create",
+        request=None,
+        responses={
+            201: VoteCreateOut, 
+            401: OpenApiResponse(description="Unauthorized"), 
+            403: OpenApiResponse(description="Forbidden")
+        },
+        parameters=[
+            OpenApiParameter(name="voted_npm", location=OpenApiParameter.PATH, required=True, type=str),
+        ],
+    )
     @sso_authenticated
     def post(self, request, voted_npm): 
         # get voter (BEMMember) object
@@ -148,6 +179,13 @@ class VoteAPIView(APIView):
                 status=status.HTTP_201_CREATED
         )
 
+    @extend_schema(
+        operation_id="best_staff_vote_statistics",
+        responses=VoteStatsOut,
+        parameters=[
+            OpenApiParameter(name="birdept", location=OpenApiParameter.PATH, required=True, type=str),
+        ],
+    )
     @sso_authenticated
     def get(self, _, birdept):
         try:
