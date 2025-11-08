@@ -1,0 +1,418 @@
+openapi: 3.0.3
+info:
+  title: Backend PTI
+  version: 1.0.0
+paths:
+  /best_staff/birdept/:
+    get:
+      operationId: best_staff_birdept_list
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Birdept'
+          description: ''
+  /best_staff/event/:
+    get:
+      operationId: best_staff_events_list
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+          description: ''
+  /best_staff/statistics/:
+    get:
+      operationId: best_staff_statistics_all
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllStatisticsOut'
+          description: ''
+  /best_staff/vote/{voted_npm}/:
+    get:
+      operationId: best_staff_vote_statistics_2
+      parameters:
+      - in: path
+        name: birdept
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: voted_npm
+        schema:
+          type: string
+        required: true
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteStatsOut'
+          description: ''
+    post:
+      operationId: best_staff_vote_create_2
+      parameters:
+      - in: path
+        name: voted_npm
+        schema:
+          type: string
+        required: true
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteCreateOut'
+          description: ''
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /best_staff/vote/statistics/{birdept}/:
+    get:
+      operationId: best_staff_vote_statistics
+      parameters:
+      - in: path
+        name: birdept
+        schema:
+          type: string
+        required: true
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteStatsOut'
+          description: ''
+    post:
+      operationId: best_staff_vote_create
+      parameters:
+      - in: path
+        name: birdept
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: voted_npm
+        schema:
+          type: string
+        required: true
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteCreateOut'
+          description: ''
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /comments/{id}/:
+    put:
+      operationId: comments_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - comments
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: comments_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - comments
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /events/:
+    get:
+      operationId: events_retrieve
+      tags:
+      - events
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /events/{id}/:
+    get:
+      operationId: events_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - events
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /pengaduan/:
+    get:
+      operationId: pengaduan_retrieve
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: pengaduan_create
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /pengaduan/{id}/:
+    get:
+      operationId: pengaduan_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: pengaduan_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: pengaduan_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /pengaduan/{id}/comments/:
+    post:
+      operationId: pengaduan_comments_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /pengaduan/{id}/like/:
+    post:
+      operationId: pengaduan_like_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AllStatisticsBirdept:
+      type: object
+      properties:
+        name:
+          type: string
+        votes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VoteCount'
+      required:
+      - name
+      - votes
+    AllStatisticsOut:
+      type: object
+      properties:
+        birdepts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllStatisticsBirdept'
+      required:
+      - birdepts
+    Birdept:
+      type: object
+      properties:
+        nama:
+          type: string
+          maxLength: 100
+        desc:
+          type: string
+          maxLength: 100
+        galeri: {}
+      required:
+      - desc
+      - nama
+    Event:
+      type: object
+      properties:
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+    VoteCount:
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+      required:
+      - count
+      - name
+    VoteCreateOut:
+      type: object
+      properties:
+        message:
+          type: string
+        payload: {}
+      required:
+      - message
+      - payload
+    VoteStatsOut:
+      type: object
+      properties:
+        total_votes:
+          type: integer
+        votes: {}
+      required:
+      - total_votes
+      - votes
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
