@@ -21,31 +21,47 @@ def authenticate_staff(request):
     except BEMMember.DoesNotExist:
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
 
+@extend_schema(
+    operation_id="best_staff_events_list",
+    responses=EventSerializer(many=True),
+)
 @api_view(['GET'])
 def get_event(_):
     event = Event.objects.all()
     serializer = EventSerializer(event, many=True)
     return Response(serializer.data)
 
+@extend_schema(
+    operation_id="best_staff_birdept_members",
+    responses={
+        200: BEMMemberSerializer(many=True),
+        401: OpenApiResponse(description="Unauthenticated"),
+        403: OpenApiResponse(description="Forbidden"),
+    },
+)
 @sso_authenticated
 @api_view(['GET'])
 def get_birdept_member(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
     
-    # try:
-    sso_account = SSOAccount.objects.get(username=request.sso_user)
-    current_user = BEMMember.objects.get(sso_account=sso_account)
-    birdept_ids = current_user.birdept.all().values_list("id", flat=True)
-    # birdept_members = BEMMember.objects.filter(birdept__in=birdept.pk).exclude(sso_account=current_user.sso_account)
-    return Response({'error_message': birdept_ids}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        if not isinstance(request.sso_user, SSOAccount):
+            request.sso_user = SSOAccount.objects.get(username=request.sso_user["user"])
 
-    serializer = BEMMemberSerializer(birdept_members, many=True)
-    return Response(serializer.data)
+        current_user = BEMMember.objects.get(sso_account=request.sso_user)    
+    except Exception:
+        # Adjust Error msg for this one (no info mw dikasi error msg apa)
+        return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
     
-    # except Exception:
-    #     # Adjust Error msg for this one (no info mw dikasi error msg apa)
-    #     return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
+    members = (
+        BEMMember.objects
+            .filter(birdept__in=current_user.birdept.all())
+            .exclude(pk=current_user.pk)
+            .distinct()
+    )
+
+    return Response(BEMMemberSerializer(members, many=True).data)
     
 @api_view(['GET'])
 def get_all_statistics(_):
