@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient, APIRequestFactory
 
+from unittest.mock import patch
 
 from .models import SSOAccount, Pengaduan, Like, Comment
 from .views import (
@@ -16,10 +17,13 @@ from .views import (
 )
 
 # Create your tests here.
+# Bypass sso authentication
+@patch("issue_tracker.views.sso_authenticated", lambda f: f)
 class IssueTrackerTest(APITestCase):
 
     # Setup test data
     def setUp(self):
+        # # Mock object request dan client
         self.factory = APIRequestFactory()
         self.client = APIClient()
 
@@ -88,7 +92,7 @@ class IssueTrackerTest(APITestCase):
         # Setup like
         Like.objects.create(akun_sso=self.user, pengaduan=self.pengaduan1)
 
-    # Authenticator helper
+    # Authenticator helper (simulate autentikasi SSO)
     def _create_authenticated_request(self, method, path, user, data=None):
         if method == 'GET':
             request = self.factory.get(path)
@@ -121,6 +125,7 @@ class IssueTrackerTest(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         pengaduan_ids = [p['id'] for p in response.data]
+
         self.assertIn(self.pengaduan1.id, pengaduan_ids)
         self.assertIn(self.pengaduan2.id, pengaduan_ids)
 
@@ -146,7 +151,7 @@ class IssueTrackerTest(APITestCase):
         self.assertIn(self.pengaduan2.id, pengaduan_ids)
 
     def test_get_my_comment(self):
-        request = self._create_authenticated_request('GET', '/comments/my/', self.user)
+        request = self._create_authenticated_request('GET', '/comments/histories/', self.user)
         
         response = get_my_comment(request)
         
@@ -156,8 +161,6 @@ class IssueTrackerTest(APITestCase):
 
         self.assertIn(self.comment1.id, comment_ids)
         self.assertIn(self.comment2.id, comment_ids)
-
-
 
     # CRPengaduanAPIView
     
@@ -294,7 +297,7 @@ class IssueTrackerTest(APITestCase):
         
         data = {'isi': 'New comment'}
         
-        request = self._create_authenticated_request('POST', f'/pengaduan/{self.pengaduan3.id}/comment/', self.user, data)
+        request = self._create_authenticated_request('POST', f'/pengaduan/{self.pengaduan3.id}/comments/', self.user, data)
         
         response = view(request, id=self.pengaduan3.id)
         
