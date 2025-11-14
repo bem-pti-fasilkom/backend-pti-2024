@@ -109,7 +109,7 @@ def get_all_statistics(_):
 )
 @sso_authenticated
 @api_view(['GET'])
-def get_all_winners(self, request):
+def get_all_winners(request):
     year = request.query_params.get("year")
     month = request.query_params.get("month")
 
