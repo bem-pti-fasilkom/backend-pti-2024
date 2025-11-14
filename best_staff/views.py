@@ -118,7 +118,7 @@ def get_all_winners(request):
         try:
             qs = qs.filter(created_at__year=int(year), created_at__month=int(month))
         except ValueError:
-            return Response({"error_message": "year dan month harus berupa integer positif"})
+            return Response({"error_message": "year dan month harus berupa integer positif"}, status=status.HTTP_400_BAD_REQUEST)
 
     else:
         now = datetime.now()
