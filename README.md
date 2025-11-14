@@ -25,6 +25,17 @@ Berikut adalah dokumentasi untuk isi repository backend PTI beserta dengan API b
 |                  | `python manage.py` pada aplikasi backend-pti             |
 | requirements.txt | File dependency aplikasi backend-pti                     |
 
+## Environment Variables
+
+| Nama          | Penjelasan                                                                   | Nilai                |
+| ------------- | ---------------------------------------------------------------------------- | -------------------- |
+| SECRET_KEY    | Secret key yang digunakan oleh Django untuk cryptographic signing            | random base64 string |
+| PRODUCTION    | Flag server sedang dalam mode production atau tidak (memengaruhi debug view) | True / False         |
+| DATABASE_NAME | Nama database                                                                | string               |
+| DATABASE_USER | User database                                                                | string               |
+| DATABASE_HOST | Host database                                                                | string               |
+| DATABASE_PORT | Port yang untuk mengakses database                                           | string               |
+
 ## Dokumentasi API
 
 Berikut adalah dokumentasi untuk penggunaan REST API Backend PTI
