@@ -7,8 +7,6 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from django.db.models import Count
 from datetime import datetime
-from rest_framework import serializers
-
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter, OpenApiResponse, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 
