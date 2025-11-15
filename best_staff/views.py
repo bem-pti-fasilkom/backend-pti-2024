@@ -48,7 +48,7 @@ def get_event(_):
     operation_id="best_staff_birdept_members",
     responses={
         200: BEMMemberSerializer(many=True),
-        401: OpenApiResponse(description="Unauthenticated"),
+        401: OpenApiResponse(description="Unauthorized"),
         403: OpenApiResponse(description="Forbidden"),
     },
 )
