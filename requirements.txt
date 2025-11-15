@@ -18,3 +18,4 @@ urllib3==2.2.1
 gunicorn
 django-cors-headers
 whitenoise
+drf-spectacular
