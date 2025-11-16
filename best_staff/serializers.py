@@ -10,7 +10,7 @@ class EventSerializer(serializers.ModelSerializer):
 class BirdeptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Birdept
-        fields = ["nama", "desc", "galeri"]
+        fields = ["nama", "displayed_name", "deskripsi", "galeri"]
 
 class VoteSerializer(serializers.ModelSerializer):
     class Meta:
