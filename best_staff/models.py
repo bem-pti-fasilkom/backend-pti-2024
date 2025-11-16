@@ -47,13 +47,14 @@ class BEMMember(models.Model):
         if self.role != self.Role.KOOR:
             return []
             
-        this_month = datetime.date.today().month
+        today = datetime.date.today()
         
-        # Get all birdept IDs this KOOR has voted for this month
+        # Get all birdept IDs this KOOR has voted for this month and year
         # .distinct() ensures each birdept is only listed once
         birdept_ids = Vote.objects.filter(
             voter=self,
-            created_at__month=this_month
+            created_at__year=today.year,
+            created_at__month=today.month
         ).values_list('birdept', flat=True).distinct()
         
         # Return the birdept standard names
