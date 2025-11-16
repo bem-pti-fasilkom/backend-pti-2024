@@ -106,8 +106,8 @@ def get_all_statistics(_):
     ],
     responses={200: AllWinnersOutSerializer, 400: OpenApiResponse(description="Invalid year/month"), 401: OpenApiResponse(description="Unauthorized")},
 )
-@sso_authenticated
 @api_view(['GET'])
+@sso_authenticated
 def get_all_winners(request):
     year = request.query_params.get("year")
     month = request.query_params.get("month")
