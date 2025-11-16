@@ -201,6 +201,35 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /best_staff/winners/:
+    get:
+      operationId: best_staff_winners
+      parameters:
+      - in: query
+        name: month
+        schema:
+          type: integer
+      - in: query
+        name: year
+        schema:
+          type: integer
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllWinnersOut'
+          description: ''
+        '400':
+          description: Invalid year/month
+        '401':
+          description: Unauthorized
   /comments/{id}/:
     put:
       operationId: comments_update
@@ -400,6 +429,21 @@ components:
             $ref: '#/components/schemas/AllStatisticsBirdept'
       required:
       - birdepts
+    AllWinnersOut:
+      type: object
+      properties:
+        filters:
+          $ref: '#/components/schemas/Filters'
+        count:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WinnerRow'
+      required:
+      - count
+      - filters
+      - results
     BEMMember:
       type: object
       properties:
@@ -445,6 +489,15 @@ components:
         end:
           type: string
           format: date-time
+    Filters:
+      type: object
+      properties:
+        year:
+          type: string
+          nullable: true
+        month:
+          type: string
+          nullable: true
     RoleEnum:
       enum:
       - STAFF
@@ -515,6 +568,45 @@ components:
       required:
       - total_votes
       - votes
+    WinnerItem:
+      type: object
+      properties:
+        npm:
+          type: string
+          nullable: true
+        name:
+          type: string
+        votes:
+          type: integer
+      required:
+      - name
+      - npm
+      - votes
+    WinnerRow:
+      type: object
+      properties:
+        birdept_id:
+          type: integer
+        birdept:
+          type: string
+          nullable: true
+        total_votes:
+          type: integer
+        top_votes:
+          type: integer
+        tie:
+          type: boolean
+        winners:
+          type: array
+          items:
+            $ref: '#/components/schemas/WinnerItem'
+      required:
+      - birdept
+      - birdept_id
+      - tie
+      - top_votes
+      - total_votes
+      - winners
   securitySchemes:
     basicAuth:
       type: http
