@@ -16,10 +16,11 @@ from drf_spectacular.types import OpenApiTypes
     responses={
         200: BEMMemberSerializer,
         401: OpenApiResponse(description="Unauthorized"),
+        403: OpenApiResponse(description="Forbidden")
     },
 )
-@sso_authenticated
 @api_view(['GET'])
+@sso_authenticated
 def authenticate_staff(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -50,8 +51,8 @@ def get_event(_):
         403: OpenApiResponse(description="Forbidden"),
     },
 )
-@sso_authenticated
 @api_view(['GET'])
+@sso_authenticated
 def get_birdept_member(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)

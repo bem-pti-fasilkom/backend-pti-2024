@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.utils import timezone
 from jwt.lib import SSOAccount
@@ -21,9 +23,38 @@ class BEMMember(models.Model):
 
     img_url = models.URLField()
 
-    birdept = models.ManyToManyField("Birdept", blank=True)
+    birdept = models.ManyToManyField(
+        'Birdept',
+        blank=True
+    )
 
+    @property
+    def has_voted(self):
+        """Returns whether the BEM member has voted this month"""
+        this_month = datetime.date.today().month
+        return Vote.objects.filter(voter=self, created_at__month=this_month).exists()
 
+    @property
+    def koor_voted_birdepts(self):
+        """
+        Returns a list of the Birdept objects a KOOR has voted for this month.
+        Returns an empty list if the user is not a KOOR.
+        """
+        if self.role != self.Role.KOOR:
+            return []
+            
+        this_month = datetime.date.today().month
+        
+        # Get all birdept IDs this KOOR has voted for this month
+        # .distinct() ensures each birdept is only listed once
+        birdept_ids = Vote.objects.filter(
+            voter=self,
+            created_at__month=this_month
+        ).values_list('birdept', flat=True).distinct()
+        
+        # Return the birdept standard names
+        return list(Birdept.objects.filter(id__in=birdept_ids).values_list("nama", flat=True))
+    
 class Event(models.Model):
     start = models.DateTimeField(editable=True, default=timezone.now)
     end = models.DateTimeField(editable=True, default=timezone.now)
