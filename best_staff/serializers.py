@@ -24,10 +24,12 @@ class SSOAccountSerializer(serializers.ModelSerializer):
 
 class BEMMemberSerializer(serializers.ModelSerializer):
     sso_account = SSOAccountSerializer()
+    has_voted = serializers.BooleanField()
+    koor_voted_birdepts = serializers.ListField()
     
     class Meta:
         model = BEMMember
-        fields = ["sso_account", "role", "img_url"]
+        fields = ["sso_account", "role", "img_url", "has_voted", "koor_voted_birdepts"]
 
 # tambahan serializer buat serialize output
 
