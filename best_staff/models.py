@@ -31,8 +31,12 @@ class BEMMember(models.Model):
     @property
     def has_voted(self):
         """Returns whether the BEM member has voted this month"""
-        this_month = datetime.date.today().month
-        return Vote.objects.filter(voter=self, created_at__month=this_month).exists()
+        today = datetime.date.today()
+        return Vote.objects.filter(
+            voter=self,
+            created_at__year=today.year,
+            created_at__month=today.month
+        ).exists()
 
     @property
     def koor_voted_birdepts(self):
