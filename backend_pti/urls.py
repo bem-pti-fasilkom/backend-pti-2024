@@ -19,11 +19,18 @@ from django.contrib import admin
 from django.urls import path, include
 from backend_pti.settings import DEBUG
 
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path("admin/" if not DEBUG else "staging/admin/", admin.site.urls),
     path("", include("issue_tracker.urls")),
     path("events/", include("main_web.urls")),
     path("auth/", include("jwt.urls")),
-    path("best_staff/", include("best_staff.urls"))
+    path("best_staff/", include("best_staff.urls")),
+
+    # Endpoint buat API documentation
+    path('docs/', SpectacularAPIView.as_view(), name='schema'),
+    path('docs/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]

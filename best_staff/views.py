@@ -1,4 +1,4 @@
-from .serializers import BEMMemberSerializer, EventSerializer, BirdeptSerializer
+from .serializers import BEMMemberSerializer, EventSerializer, BirdeptSerializer, AllStatisticsOut, VoteCreateOut, VoteStatsOut, AllWinnersOutSerializer
 from .models import BEMMember, Event, Birdept, Vote
 from jwt.lib import sso_authenticated, SSOAccount
 from rest_framework.response import Response
@@ -7,10 +7,20 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from django.db.models import Count
 from datetime import datetime
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from drf_spectacular.types import OpenApiTypes
 
 # Create your views here.
-@sso_authenticated
+@extend_schema(
+    operation_id="best_staff_authenticate",
+    responses={
+        200: BEMMemberSerializer,
+        401: OpenApiResponse(description="Unauthorized"),
+        403: OpenApiResponse(description="Forbidden")
+    },
+)
 @api_view(['GET'])
+@sso_authenticated
 def authenticate_staff(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -23,32 +33,52 @@ def authenticate_staff(request):
     except BEMMember.DoesNotExist:
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
 
+@extend_schema(
+    operation_id="best_staff_events_list",
+    responses=EventSerializer(many=True),
+)
 @api_view(['GET'])
 def get_event(_):
     event = Event.objects.all()
     serializer = EventSerializer(event, many=True)
     return Response(serializer.data)
 
-@sso_authenticated
+@extend_schema(
+    operation_id="best_staff_birdept_members",
+    responses={
+        200: BEMMemberSerializer(many=True),
+        401: OpenApiResponse(description="Unauthorized"),
+        403: OpenApiResponse(description="Forbidden"),
+    },
+)
 @api_view(['GET'])
+@sso_authenticated
 def get_birdept_member(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
     
-    # try:
-    sso_account = SSOAccount.objects.get(username=request.sso_user)
-    current_user = BEMMember.objects.get(sso_account=sso_account)
-    birdept_ids = current_user.birdept.all().values_list("id", flat=True)
-    # birdept_members = BEMMember.objects.filter(birdept__in=birdept.pk).exclude(sso_account=current_user.sso_account)
-    return Response({'error_message': birdept_ids}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        if not isinstance(request.sso_user, SSOAccount):
+            request.sso_user = SSOAccount.objects.get(username=request.sso_user["user"])
 
-    serializer = BEMMemberSerializer(birdept_members, many=True)
-    return Response(serializer.data)
+        current_user = BEMMember.objects.get(sso_account=request.sso_user)    
+    except Exception:
+        # Adjust Error msg for this one (no info mw dikasi error msg apa)
+        return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
     
-    # except Exception:
-    #     # Adjust Error msg for this one (no info mw dikasi error msg apa)
-    #     return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
-    
+    members = (
+        BEMMember.objects
+            .filter(birdept__in=current_user.birdept.all())
+            .exclude(pk=current_user.pk)
+            .distinct()
+    )
+
+    return Response(BEMMemberSerializer(members, many=True).data)
+
+@extend_schema(
+    operation_id="best_staff_statistics_all",
+    responses=AllStatisticsOut,
+)
 @api_view(['GET'])
 def get_all_statistics(_):
     birdepts = Birdept.objects.all()
@@ -68,9 +98,17 @@ def get_all_statistics(_):
 
     return Response(responses)
 
-@sso_authenticated
+@extend_schema(
+    operation_id="best_staff_winners",
+    parameters=[
+        OpenApiParameter(name="year",  location=OpenApiParameter.QUERY, required=False, type=OpenApiTypes.INT),
+        OpenApiParameter(name="month", location=OpenApiParameter.QUERY, required=False, type=OpenApiTypes.INT),
+    ],
+    responses={200: AllWinnersOutSerializer, 400: OpenApiResponse(description="Invalid year/month"), 401: OpenApiResponse(description="Unauthorized")},
+)
 @api_view(['GET'])
-def get_all_winners(self, request):
+@sso_authenticated
+def get_all_winners(request):
     year = request.query_params.get("year")
     month = request.query_params.get("month")
 
@@ -79,7 +117,7 @@ def get_all_winners(self, request):
         try:
             qs = qs.filter(created_at__year=int(year), created_at__month=int(month))
         except ValueError:
-            return Response({"error_message": "year dan month harus berupa integer positif"})
+            return Response({"error_message": "year dan month harus berupa integer positif"}, status=status.HTTP_400_BAD_REQUEST)
 
     else:
         now = datetime.now()
@@ -139,6 +177,10 @@ def get_all_winners(self, request):
         "results": data
     })
 
+@extend_schema(
+    operation_id="best_staff_birdept_list",
+    responses=BirdeptSerializer(many=True),
+)
 @api_view(['GET'])
 def get_birdept(request):
     if request.sso_user is None:
@@ -149,6 +191,18 @@ def get_birdept(request):
     return Response(serializer.data)
 
 class VoteAPIView(APIView):
+    @extend_schema(
+        operation_id="best_staff_vote_create",
+        request=None,
+        responses={
+            201: VoteCreateOut, 
+            401: OpenApiResponse(description="Unauthorized"), 
+            403: OpenApiResponse(description="Forbidden")
+        },
+        parameters=[
+            OpenApiParameter(name="voted_npm", location=OpenApiParameter.PATH, required=True, type=str),
+        ],
+    )
     @sso_authenticated
     def post(self, request, voted_npm): 
         # get voter (BEMMember) object
@@ -197,7 +251,7 @@ class VoteAPIView(APIView):
         return Response(
                 {
                     'message': 'Vote berhasil',
-                    'data': {
+                    'payload': {
                         'voted_name': voted.sso_account.full_name,
                         'timestamp': vote.created_at
                     }
@@ -205,6 +259,13 @@ class VoteAPIView(APIView):
                 status=status.HTTP_201_CREATED
         )
 
+    @extend_schema(
+        operation_id="best_staff_vote_statistics",
+        responses=VoteStatsOut,
+        parameters=[
+            OpenApiParameter(name="birdept", location=OpenApiParameter.PATH, required=True, type=str),
+        ],
+    )
     @sso_authenticated
     def get(self, _, birdept):
         try:

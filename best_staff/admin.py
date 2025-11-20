@@ -54,7 +54,7 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(Birdept)
 class BirdeptAdmin(admin.ModelAdmin):
-    list_display = ['nama', 'desc']
+    list_display = ['nama', 'deskripsi']
     search_fields = ['nama']
     
     def get_readonly_fields(self, request, obj=None):
