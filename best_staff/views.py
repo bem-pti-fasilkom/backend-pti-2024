@@ -183,9 +183,6 @@ def get_all_winners(request):
 )
 @api_view(['GET'])
 def get_birdept(request):
-    if request.sso_user is None:
-        return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
-    
     birdept = Birdept.objects.all()
     serializer = BirdeptSerializer(birdept, many=True)
     return Response(serializer.data)
