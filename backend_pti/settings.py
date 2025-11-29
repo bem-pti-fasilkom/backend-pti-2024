@@ -11,14 +11,16 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import environ
-# Initialise environment variables
-env = environ.Env()
-environ.Env.read_env()
+import os
 
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -64,7 +66,8 @@ INSTALLED_APPS = [
     "issue_tracker.apps.IssueTrackerConfig",
     "main_web.apps.MainWebConfig",
     "best_staff.apps.BestStaffConfig",
-    "jwt"
+    "jwt",
+    "cloudinary_app"
 ]
 
 
