@@ -230,6 +230,126 @@ paths:
           description: Invalid year/month
         '401':
           description: Unauthorized
+  /cloudinary/image/:
+    get:
+      operationId: cloudinary_image_retrieve
+      tags:
+      - cloudinary
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: cloudinary_image_create
+      tags:
+      - cloudinary
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /cloudinary/image/{id}/:
+    get:
+      operationId: cloudinary_image_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cloudinary
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: cloudinary_image_create_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cloudinary
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /cloudinary/video/:
+    get:
+      operationId: cloudinary_video_retrieve
+      tags:
+      - cloudinary
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: cloudinary_video_create
+      tags:
+      - cloudinary
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /cloudinary/video/{id}/:
+    get:
+      operationId: cloudinary_video_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cloudinary
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: cloudinary_video_create_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - cloudinary
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
   /comments/{id}/:
     put:
       operationId: comments_update
