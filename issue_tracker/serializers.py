@@ -95,6 +95,8 @@ class SinglePengaduanSerializer(PengaduanSerializer):
 
 
 class LikeSerializer(serializers.ModelSerializer):
+    npm = serializers.CharField(source="akun_sso.npm", read_only=True)
+
     class Meta:
         model = Like
         fields = ["id", "npm", "pengaduan"]
