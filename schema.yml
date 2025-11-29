@@ -1,0 +1,617 @@
+openapi: 3.0.3
+info:
+  title: Backend PTI
+  version: 1.0.0
+paths:
+  /best_staff/authenticate/:
+    get:
+      operationId: best_staff_authenticate
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BEMMember'
+          description: ''
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /best_staff/birdept/:
+    get:
+      operationId: best_staff_birdept_list
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Birdept'
+          description: ''
+  /best_staff/birdept/members/:
+    get:
+      operationId: best_staff_birdept_members
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BEMMember'
+          description: ''
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /best_staff/event/:
+    get:
+      operationId: best_staff_events_list
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+          description: ''
+  /best_staff/statistics/:
+    get:
+      operationId: best_staff_statistics_all
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllStatisticsOut'
+          description: ''
+  /best_staff/vote/{voted_npm}/:
+    get:
+      operationId: best_staff_vote_statistics_2
+      parameters:
+      - in: path
+        name: birdept
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: voted_npm
+        schema:
+          type: string
+        required: true
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteStatsOut'
+          description: ''
+    post:
+      operationId: best_staff_vote_create_2
+      parameters:
+      - in: path
+        name: voted_npm
+        schema:
+          type: string
+        required: true
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteCreateOut'
+          description: ''
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /best_staff/vote/statistics/{birdept}/:
+    get:
+      operationId: best_staff_vote_statistics
+      parameters:
+      - in: path
+        name: birdept
+        schema:
+          type: string
+        required: true
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteStatsOut'
+          description: ''
+    post:
+      operationId: best_staff_vote_create
+      parameters:
+      - in: path
+        name: birdept
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: voted_npm
+        schema:
+          type: string
+        required: true
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteCreateOut'
+          description: ''
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /best_staff/winners/:
+    get:
+      operationId: best_staff_winners
+      parameters:
+      - in: query
+        name: month
+        schema:
+          type: integer
+      - in: query
+        name: year
+        schema:
+          type: integer
+      tags:
+      - best_staff
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllWinnersOut'
+          description: ''
+        '400':
+          description: Invalid year/month
+        '401':
+          description: Unauthorized
+  /comments/{id}/:
+    put:
+      operationId: comments_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - comments
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: comments_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - comments
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /events/:
+    get:
+      operationId: events_retrieve
+      tags:
+      - events
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /events/{id}/:
+    get:
+      operationId: events_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - events
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /pengaduan/:
+    get:
+      operationId: pengaduan_retrieve
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: pengaduan_create
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /pengaduan/{id}/:
+    get:
+      operationId: pengaduan_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: pengaduan_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: pengaduan_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /pengaduan/{id}/comments/:
+    post:
+      operationId: pengaduan_comments_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /pengaduan/{id}/like/:
+    post:
+      operationId: pengaduan_like_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AllStatisticsBirdept:
+      type: object
+      properties:
+        name:
+          type: string
+        votes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VoteCount'
+      required:
+      - name
+      - votes
+    AllStatisticsOut:
+      type: object
+      properties:
+        birdepts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllStatisticsBirdept'
+      required:
+      - birdepts
+    AllWinnersOut:
+      type: object
+      properties:
+        filters:
+          $ref: '#/components/schemas/Filters'
+        count:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WinnerRow'
+      required:
+      - count
+      - filters
+      - results
+    BEMMember:
+      type: object
+      properties:
+        sso_account:
+          $ref: '#/components/schemas/SSOAccount'
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        img_url:
+          type: string
+          format: uri
+          maxLength: 200
+        has_voted:
+          type: boolean
+        koor_voted_birdepts:
+          type: array
+          items: {}
+      required:
+      - has_voted
+      - img_url
+      - koor_voted_birdepts
+      - sso_account
+    Birdept:
+      type: object
+      properties:
+        nama:
+          type: string
+          maxLength: 200
+        displayed_name:
+          type: string
+          maxLength: 200
+        deskripsi:
+          type: string
+          maxLength: 1000
+        galeri: {}
+      required:
+      - nama
+    Event:
+      type: object
+      properties:
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+    Filters:
+      type: object
+      properties:
+        year:
+          type: string
+          nullable: true
+        month:
+          type: string
+          nullable: true
+    RoleEnum:
+      enum:
+      - STAFF
+      - BPH
+      - KOOR
+      type: string
+      description: |-
+        * `STAFF` - Staff
+        * `BPH` - Bph
+        * `KOOR` - Koor
+    SSOAccount:
+      type: object
+      properties:
+        npm:
+          type: string
+          maxLength: 255
+        full_name:
+          type: string
+          maxLength: 255
+        username:
+          type: string
+          maxLength: 255
+        faculty:
+          type: string
+          maxLength: 255
+        short_faculty:
+          type: string
+          maxLength: 255
+        major:
+          type: string
+          maxLength: 255
+        program:
+          type: string
+          maxLength: 255
+      required:
+      - faculty
+      - full_name
+      - major
+      - npm
+      - program
+      - short_faculty
+      - username
+    VoteCount:
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+      required:
+      - count
+      - name
+    VoteCreateOut:
+      type: object
+      properties:
+        message:
+          type: string
+        payload: {}
+      required:
+      - message
+      - payload
+    VoteStatsOut:
+      type: object
+      properties:
+        total_votes:
+          type: integer
+        votes: {}
+      required:
+      - total_votes
+      - votes
+    WinnerItem:
+      type: object
+      properties:
+        npm:
+          type: string
+          nullable: true
+        name:
+          type: string
+        votes:
+          type: integer
+      required:
+      - name
+      - npm
+      - votes
+    WinnerRow:
+      type: object
+      properties:
+        birdept_id:
+          type: integer
+        birdept:
+          type: string
+          nullable: true
+        total_votes:
+          type: integer
+        top_votes:
+          type: integer
+        tie:
+          type: boolean
+        winners:
+          type: array
+          items:
+            $ref: '#/components/schemas/WinnerItem'
+      required:
+      - birdept
+      - birdept_id
+      - tie
+      - top_votes
+      - total_votes
+      - winners
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

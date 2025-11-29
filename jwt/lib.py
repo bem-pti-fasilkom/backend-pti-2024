@@ -34,23 +34,31 @@ def sso_authenticated(handler, *args, **kwargs):
             request = args[0]
         else:
             request = args[1]
-        npm = request.sso_user.get("npm") if request.sso_user is not None else None
-        sso_user = None
+
+        raw = request.sso_user
+
+        if raw is None:
+            return JsonResponse({"error": "User not authenticated"}, status=401)
+        
+        npm = raw.get("npm")
+
+        if npm is None:
+            return JsonResponse({"error": "Invalid SSO data"}, status=401)
+        
         try:
             sso_user = SSOAccount.objects.get(npm=npm)
         except SSOAccount.DoesNotExist:
-            pass
-        if sso_user is None and npm is not None:
+            org = raw.get("organization", {})
             sso_user = SSOAccount.objects.create(
-                npm=request.sso_user["user"],
-                full_name=request.sso_user["nama"],
-                username=request.sso_user["user"],
-                faculty=request.sso_user["jurusan"]["faculty"],
-                short_faculty=request.sso_user["jurusan"]["shortFaculty"],
-                major=request.sso_user["jurusan"]["major"],
-                program=request.sso_user["jurusan"]["program"]
+                npm=raw.get("npm"),
+                full_name=raw.get("nama"),
+                username=raw.get("username"),
+                faculty=org.get("faculty"),
+                short_faculty=org.get("short_faculty"),
+                major=org.get("major"),
+                program=org.get("program"),
             )
-            sso_user.save()
+        
         request.sso_user = sso_user
         return handler(*args, **kwargs)
     return wrapped
