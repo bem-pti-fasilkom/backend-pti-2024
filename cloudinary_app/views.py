@@ -56,6 +56,7 @@ class CloudinaryImageGetCreate(APIView):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
   
+  @sso_authenticated
   def delete(self, request):
     images = Image.objects.all()
     for image in images:
