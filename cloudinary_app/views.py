@@ -55,13 +55,6 @@ class CloudinaryImageGetCreate(APIView):
       return Response(ImagePostSerializer(newImage).data, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-  
-  @sso_authenticated
-  def delete(self, request):
-    images = Image.objects.all()
-    for image in images:
-      image.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CloudinaryVideoGetCreate(APIView):
   @sso_authenticated
