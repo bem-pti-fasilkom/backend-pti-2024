@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 import environ
 import os
 
@@ -60,7 +61,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     'corsheaders',
-    'drf_spectacular',
 
     # list user created apps here
     "issue_tracker.apps.IssueTrackerConfig",
@@ -122,16 +122,7 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 24,
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
-
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'Backend PTI',
-    'DESCRIPTION': '',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    # OTHER SETTINGS
+    'PAGE_SIZE': 24
 }
 
 # Password validation
