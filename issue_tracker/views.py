@@ -15,6 +15,7 @@ from drf_spectacular.types import OpenApiTypes
 
 @extend_schema(
     operation_id="pengaduan_my_list",
+    tags=["issue_tracker"],
     responses={
         200: PengaduanSerializer(many=True),
         401: OpenApiResponse(description="Unauthorized"),
@@ -32,6 +33,7 @@ def get_my_pengaduan(request):
 
 @extend_schema(
     operation_id="pengaduan_my_liked_list",
+    tags=["issue_tracker"],
     responses={
         200: PengaduanSerializer(many=True),
         401: OpenApiResponse(description="Unauthorized"),
@@ -49,6 +51,7 @@ def get_my_liked_pengaduan(request):
 
 @extend_schema(
     operation_id="pengaduan_my_commented_list",
+    tags=["issue_tracker"],
     responses={
         200: PengaduanSerializer(many=True),
         401: OpenApiResponse(description="Unauthorized"),
@@ -66,6 +69,7 @@ def get_my_commented_pengaduan(request):
 
 @extend_schema(
     operation_id="pengaduan_my_comment_list",
+    tags=["issue_tracker"],
     responses={
         200: CommentSerializer(many=True),
         401: OpenApiResponse(description="Unauthorized"),
@@ -89,6 +93,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class CRPengaduanAPIView(APIView):
     @extend_schema(
         operation_id="pengaduan_list",
+        tags=["issue_tracker"],
         parameters=[
             OpenApiParameter(
                 name="status",
@@ -204,6 +209,7 @@ class CRPengaduanAPIView(APIView):
     
     @extend_schema(
         operation_id="pengaduan_create",
+        tags=["issue_tracker"],
         request=PengaduanSerializer,
         responses={
             201: PengaduanSerializer,
@@ -235,6 +241,7 @@ class CRPengaduanAPIView(APIView):
 class RUDPengaduanAPIView(APIView):
     @extend_schema(
         operation_id="pengaduan_detail",
+        tags=["issue_tracker"],
         parameters=[
             OpenApiParameter(
                 name="id",
@@ -254,6 +261,7 @@ class RUDPengaduanAPIView(APIView):
 
     @extend_schema(
         operation_id="pengaduan_update",
+        tags=["issue_tracker"],
         request=PengaduanSerializer,
         parameters=[
             OpenApiParameter(
@@ -293,6 +301,7 @@ class RUDPengaduanAPIView(APIView):
 
     @extend_schema(
         operation_id="pengaduan_delete",
+        tags=["issue_tracker"],
         parameters=[
             OpenApiParameter(
                 name="id",
@@ -329,6 +338,7 @@ class RUDPengaduanAPIView(APIView):
 class LikePengaduanAPIView(APIView):
     @extend_schema(
         operation_id="pengaduan_like_toggle",
+        tags=["issue_tracker"],
         request=None,
         parameters=[
             OpenApiParameter(
@@ -364,6 +374,7 @@ class LikePengaduanAPIView(APIView):
 class CCommentAPIView(APIView):
     @extend_schema(
         operation_id="pengaduan_comment_create",
+        tags=["issue_tracker"],
         request=None,
         parameters=[
             OpenApiParameter(
@@ -400,6 +411,7 @@ class CCommentAPIView(APIView):
 class UDCommentAPIView(APIView):
     @extend_schema(
         operation_id="pengaduan_comment_update",
+        tags=["issue_tracker"],
         request=None,
         parameters=[
             OpenApiParameter(
@@ -436,6 +448,7 @@ class UDCommentAPIView(APIView):
     
     @extend_schema(
         operation_id="pengaduan_comment_delete",
+        tags=["issue_tracker"],
         parameters=[
             OpenApiParameter(
                 name="id",
