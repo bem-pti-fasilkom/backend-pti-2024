@@ -78,27 +78,92 @@ def get_birdept_member(request):
 
 @extend_schema(
     operation_id="best_staff_statistics_all",
-    responses=AllStatisticsOut,
+    parameters=[
+        OpenApiParameter(
+            name="year",
+            location=OpenApiParameter.QUERY,
+            required=False,
+            type=OpenApiTypes.INT,
+        ),
+        OpenApiParameter(
+            name="month",
+            location=OpenApiParameter.QUERY,
+            required=False,
+            type=OpenApiTypes.INT,
+        ),
+    ],
+    responses={
+        200: AllStatisticsOut,
+        400: OpenApiResponse(description="Invalid year/month"),
+    },
 )
-@api_view(['GET'])
-def get_all_statistics(_):
+@api_view(["GET"])
+def get_all_statistics(request):
+    year = request.query_params.get("year")
+    month = request.query_params.get("month")
+
+    votes = Vote.objects.all()
+
+    if year and month:
+        try:
+            votes = votes.filter(created_at__year=int(year), created_at__month=int(month))
+        except ValueError:
+            return Response(
+                {"error_message": "year dan month harus berupa integer positif"}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        now = datetime.now()
+        votes = votes.filter(created_at__year=now.year, created_at__month=now.month)
+
     birdepts = Birdept.objects.all()
+
     responses = {
         "birdepts": [
             {
                 "name": birdept.nama,
                 "votes": [
                     {
-                        "name": m.sso_account.full_name,
-                        "count": Vote.objects.filter(voted=m).count()
-                    } for m in BEMMember.objects.filter(birdept=birdept)
-                ]
-            } for birdept in birdepts
+                        "name": member.sso_account.full_name,
+                        "count": votes.filter(voted=member).count(),
+                    }
+                    for member in BEMMember.objects.filter(birdept=birdept)
+                ],
+            }
+            for birdept in birdepts
         ]
     }
 
     return Response(responses)
 
+
+@extend_schema(
+    operation_id="best_staff_vote_statistics",
+    parameters=[
+        OpenApiParameter(
+            name="birdept",
+            location=OpenApiParameter.PATH,
+            required=True,
+            type=OpenApiTypes.STR,
+        ),
+        OpenApiParameter(
+            name="year",
+            location=OpenApiParameter.QUERY,
+            required=False,
+            type=OpenApiTypes.INT,
+        ),
+        OpenApiParameter(
+            name="month",
+            location=OpenApiParameter.QUERY,
+            required=False,
+            type=OpenApiTypes.INT,
+        ),
+    ],
+    responses={
+        200: VoteStatsOut,
+        400: OpenApiResponse(description="Invalid year/month"),
+        401: OpenApiResponse(description="Unauthorized"),
+        404: OpenApiResponse(description="Birdept tidak ditemukan"),
+    },
+)
 @api_view(["GET"])
 @sso_authenticated
 def get_statistic(request, birdept):
@@ -230,6 +295,23 @@ def get_birdept(request):
     serializer = BirdeptSerializer(birdept, many=True)
     return Response(serializer.data)
 
+@extend_schema(
+    operation_id="best_staff_vote_create",
+    request=None,
+    parameters=[
+        OpenApiParameter(
+            name="voted_npm",
+            location=OpenApiParameter.PATH,
+            required=True,
+            type=OpenApiTypes.STR,
+        ),
+    ],
+    responses={
+        201: VoteCreateOut,
+        401: OpenApiResponse(description="Unauthorized"),
+        403: OpenApiResponse(description="Forbidden"),
+    },
+)
 @sso_authenticated
 @api_view(["POST"])
 def create_vote(request, voted_npm): 
