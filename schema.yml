@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: Backend PTI
-  version: 1.0.0
+  title: ''
+  version: 0.0.0
 paths:
   /best_staff/authenticate/:
     get:
@@ -232,7 +232,7 @@ paths:
           description: Unauthorized
   /comments/{id}/:
     put:
-      operationId: comments_update
+      operationId: pengaduan_comment_update
       parameters:
       - in: path
         name: id
@@ -247,9 +247,21 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+          description: ''
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
     delete:
-      operationId: comments_destroy
+      operationId: pengaduan_comment_delete
       parameters:
       - in: path
         name: id
@@ -263,8 +275,160 @@ paths:
       - basicAuth: []
       - {}
       responses:
-        '204':
-          description: No response body
+        '200':
+          description: Komentar berhasil dihapus
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+  /docs/:
+    get:
+      operationId: docs_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - docs
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /events/:
     get:
       operationId: events_retrieve
@@ -297,7 +461,55 @@ paths:
           description: No response body
   /pengaduan/:
     get:
-      operationId: pengaduan_retrieve
+      operationId: pengaduan_list
+      parameters:
+      - in: query
+        name: date_gt
+        schema:
+          type: string
+          format: date
+        description: Filter tanggal_post >= date
+      - in: query
+        name: date_lt
+        schema:
+          type: string
+          format: date
+        description: Filter tanggal_post <= date
+      - in: query
+        name: judul
+        schema:
+          type: string
+        description: Filter by title (icontains)
+      - in: query
+        name: kategori
+        schema:
+          type: string
+        description: Filter by category
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number (pagination)
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Page size (pagination)
+      - in: query
+        name: sort_date
+        schema:
+          type: string
+        description: 'Sort by date: "asc" or "desc"'
+      - in: query
+        name: sort_like
+        schema:
+          type: string
+        description: 'Sort by like count: "asc" or "desc"'
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter by status
       tags:
       - pengaduan
       security:
@@ -306,21 +518,49 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pengaduan'
+          description: ''
+        '400':
+          description: Invalid filter or sort query
     post:
       operationId: pengaduan_create
       tags:
       - pengaduan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pengaduan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pengaduan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Pengaduan'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
       responses:
-        '200':
-          description: No response body
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pengaduan'
+          description: ''
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
   /pengaduan/{id}/:
     get:
-      operationId: pengaduan_retrieve_2
+      operationId: pengaduan_detail
       parameters:
       - in: path
         name: id
@@ -335,7 +575,13 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SinglePengaduan'
+          description: ''
+        '404':
+          description: Not found
     put:
       operationId: pengaduan_update
       parameters:
@@ -346,15 +592,39 @@ paths:
         required: true
       tags:
       - pengaduan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pengaduan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pengaduan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Pengaduan'
+        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pengaduan'
+          description: ''
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
     delete:
-      operationId: pengaduan_destroy
+      operationId: pengaduan_delete
       parameters:
       - in: path
         name: id
@@ -368,11 +638,17 @@ paths:
       - basicAuth: []
       - {}
       responses:
-        '204':
-          description: No response body
+        '200':
+          description: Pengaduan deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
   /pengaduan/{id}/comments/:
     post:
-      operationId: pengaduan_comments_create
+      operationId: pengaduan_comment_create
       parameters:
       - in: path
         name: id
@@ -386,11 +662,21 @@ paths:
       - basicAuth: []
       - {}
       responses:
-        '200':
-          description: No response body
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+          description: ''
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
   /pengaduan/{id}/like/:
     post:
-      operationId: pengaduan_like_create
+      operationId: pengaduan_like_toggle
       parameters:
       - in: path
         name: id
@@ -405,7 +691,13 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          description: Unlike berhasil
+        '201':
+          description: Like berhasil
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
 components:
   schemas:
     AllStatisticsBirdept:
@@ -480,6 +772,34 @@ components:
         galeri: {}
       required:
       - nama
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        author:
+          type: string
+          readOnly: true
+        isi:
+          type: string
+        pengaduan:
+          type: integer
+          readOnly: true
+        tanggal_post:
+          type: string
+          format: date-time
+          readOnly: true
+        is_anonymous:
+          type: boolean
+          readOnly: true
+      required:
+      - author
+      - id
+      - is_anonymous
+      - isi
+      - pengaduan
+      - tanggal_post
     Event:
       type: object
       properties:
@@ -498,6 +818,69 @@ components:
         month:
           type: string
           nullable: true
+    KategoriEnum:
+      enum:
+      - FINANSIAL
+      - KEKERASAN_SEKSUAL
+      - FASILITAS
+      - AKADEMIS
+      - LAINNYA
+      type: string
+      description: |-
+        * `FINANSIAL` - Finansial
+        * `KEKERASAN_SEKSUAL` - Kekerasan Seksual
+        * `FASILITAS` - Fasilitas
+        * `AKADEMIS` - Akademis
+        * `LAINNYA` - Lainnya
+    Pengaduan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        is_anonymous:
+          type: boolean
+        judul:
+          type: string
+          maxLength: 100
+        isi:
+          type: string
+        lokasi:
+          type: string
+        tanggal_post:
+          type: string
+          format: date-time
+        jumlah_like:
+          type: string
+          readOnly: true
+        jumlah_komentar:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        author:
+          type: string
+          readOnly: true
+        likes:
+          type: string
+          readOnly: true
+        evidence:
+          type: string
+          readOnly: true
+        kategori:
+          $ref: '#/components/schemas/KategoriEnum'
+      required:
+      - author
+      - evidence
+      - id
+      - isi
+      - judul
+      - jumlah_komentar
+      - jumlah_like
+      - likes
+      - status
     RoleEnum:
       enum:
       - STAFF
@@ -540,6 +923,73 @@ components:
       - program
       - short_faculty
       - username
+    SinglePengaduan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        is_anonymous:
+          type: boolean
+        judul:
+          type: string
+          maxLength: 100
+        isi:
+          type: string
+        lokasi:
+          type: string
+        tanggal_post:
+          type: string
+          format: date-time
+        jumlah_like:
+          type: string
+          readOnly: true
+        jumlah_komentar:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        author:
+          type: string
+          readOnly: true
+        likes:
+          type: string
+          readOnly: true
+        comments:
+          type: string
+          readOnly: true
+        evidence:
+          type: string
+          readOnly: true
+        status_changes:
+          type: string
+          readOnly: true
+        kategori:
+          $ref: '#/components/schemas/KategoriEnum'
+      required:
+      - author
+      - comments
+      - evidence
+      - id
+      - isi
+      - judul
+      - jumlah_komentar
+      - jumlah_like
+      - likes
+      - status
+      - status_changes
+    StatusEnum:
+      enum:
+      - UNRESOLVED
+      - RESOLVED
+      - REPORTED
+      type: string
+      description: |-
+        * `UNRESOLVED` - Unresolved
+        * `RESOLVED` - Resolved
+        * `REPORTED` - Reported
     VoteCount:
       type: object
       properties:
