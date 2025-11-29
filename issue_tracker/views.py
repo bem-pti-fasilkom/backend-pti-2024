@@ -20,8 +20,8 @@ from drf_spectacular.types import OpenApiTypes
         401: OpenApiResponse(description="Unauthorized"),
     },
 )
-@sso_authenticated
 @api_view(['GET'])
+@sso_authenticated
 def get_my_pengaduan(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -37,8 +37,8 @@ def get_my_pengaduan(request):
         401: OpenApiResponse(description="Unauthorized"),
     },
 )
-@sso_authenticated
 @api_view(['GET'])
+@sso_authenticated
 def get_my_liked_pengaduan(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -54,8 +54,8 @@ def get_my_liked_pengaduan(request):
         401: OpenApiResponse(description="Unauthorized"),
     },
 )
-@sso_authenticated
 @api_view(['GET'])
+@sso_authenticated
 def get_my_commented_pengaduan(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -71,8 +71,8 @@ def get_my_commented_pengaduan(request):
         401: OpenApiResponse(description="Unauthorized"),
     },
 )
-@sso_authenticated
 @api_view(['GET'])
+@sso_authenticated
 def get_my_comment(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -329,6 +329,7 @@ class RUDPengaduanAPIView(APIView):
 class LikePengaduanAPIView(APIView):
     @extend_schema(
         operation_id="pengaduan_like_toggle",
+        request=None,
         parameters=[
             OpenApiParameter(
                 name="id",

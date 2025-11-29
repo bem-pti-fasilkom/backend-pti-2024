@@ -283,6 +283,26 @@ paths:
           description: Forbidden
         '404':
           description: Not found
+  /comments/histories/:
+    get:
+      operationId: pengaduan_my_comment_list
+      tags:
+      - comments
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+          description: ''
+        '401':
+          description: Unauthorized
   /docs/:
     get:
       operationId: docs_retrieve
@@ -698,6 +718,66 @@ paths:
           description: Unauthorized
         '404':
           description: Not found
+  /pengaduan/commented/:
+    get:
+      operationId: pengaduan_my_commented_list
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pengaduan'
+          description: ''
+        '401':
+          description: Unauthorized
+  /pengaduan/histories/:
+    get:
+      operationId: pengaduan_my_list
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pengaduan'
+          description: ''
+        '401':
+          description: Unauthorized
+  /pengaduan/liked/:
+    get:
+      operationId: pengaduan_my_liked_list
+      tags:
+      - pengaduan
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pengaduan'
+          description: ''
+        '401':
+          description: Unauthorized
 components:
   schemas:
     AllStatisticsBirdept:
