@@ -40,6 +40,10 @@ def sso_authenticated(handler, *args, **kwargs):
         if raw is None:
             return JsonResponse({"error": "User not authenticated"}, status=401)
         
+        if isinstance(raw, SSOAccount):
+            request.sso_user = raw
+            return handler(*args, **kwargs)
+        
         npm = raw.get("npm")
 
         if npm is None:
