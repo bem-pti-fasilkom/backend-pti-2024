@@ -7,6 +7,15 @@ from django.utils.translation import gettext_lazy as _
 
 
 # Create your models here.
+class Birdept(models.Model):
+    nama = models.CharField(max_length=200)
+    displayed_name = models.CharField(max_length=200, default="")
+    deskripsi = models.CharField(max_length=1000, default="")
+    galeri = models.JSONField(default=list)
+
+    def __str__(self):
+        return self.nama
+    
 class BEMMember(models.Model):
     sso_account = models.OneToOneField(
         SSOAccount,
@@ -24,7 +33,7 @@ class BEMMember(models.Model):
     img_url = models.URLField()
 
     birdept = models.ManyToManyField(
-        'Birdept',
+        to=Birdept,
         blank=True
     )
 
@@ -60,6 +69,9 @@ class BEMMember(models.Model):
         # Return the birdept standard names
         return list(Birdept.objects.filter(id__in=birdept_ids).values_list("nama", flat=True))
     
+    def __str__(self):
+        return "BEMMember npm: "+self.sso_account.npm+", role: "+self.role
+    
 class Event(models.Model):
     start = models.DateTimeField(editable=True, default=timezone.now)
     end = models.DateTimeField(editable=True, default=timezone.now)
@@ -70,17 +82,6 @@ class Event(models.Model):
             + " - "
             + self.end.strftime("%Y-%m-%d %H:%M:%S")
         )
-
-
-class Birdept(models.Model):
-    nama = models.CharField(max_length=200)
-    displayed_name = models.CharField(max_length=200, default="")
-    deskripsi = models.CharField(max_length=1000, default="")
-    galeri = models.JSONField(default=list)
-
-    def __str__(self):
-        return self.nama
-
 
 class Vote(models.Model):
     # Voter can vote for PI or BPH

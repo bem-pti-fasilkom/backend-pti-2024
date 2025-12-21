@@ -24,12 +24,16 @@ class SSOAccountSerializer(serializers.ModelSerializer):
 
 class BEMMemberSerializer(serializers.ModelSerializer):
     sso_account = SSOAccountSerializer()
+    birdept = serializers.SerializerMethodField()
     has_voted = serializers.BooleanField()
     koor_voted_birdepts = serializers.ListField()
     
     class Meta:
         model = BEMMember
-        fields = ["sso_account", "role", "img_url", "has_voted", "koor_voted_birdepts"]
+        fields = ["sso_account", "role", "img_url", "birdept", "has_voted", "koor_voted_birdepts"]
+
+    def get_birdept(self, obj):
+        return list(obj.birdept.values_list("nama", flat=True))
 
 # tambahan serializer buat serialize output
 
