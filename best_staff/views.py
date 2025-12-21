@@ -11,7 +11,6 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiRespon
 from drf_spectacular.types import OpenApiTypes
 from django.views.decorators.csrf import csrf_exempt
 
-# Create your views here.
 @extend_schema(
     operation_id="best_staff_authenticate",
     responses={
@@ -23,16 +22,17 @@ from django.views.decorators.csrf import csrf_exempt
 @api_view(['GET'])
 @sso_authenticated
 def authenticate_staff(request):
+
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
     
     try:
-        sso_account = SSOAccount.objects.get(username=request.sso_user)
-        bem_member = BEMMember.objects.get(sso_account=sso_account)
+        bem_member = BEMMember.objects.get(sso_account=request.sso_user)
         serializer = BEMMemberSerializer(bem_member)
         return Response(serializer.data)
     except BEMMember.DoesNotExist:
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
+
 
 @extend_schema(
     operation_id="best_staff_events_list",
@@ -43,6 +43,7 @@ def get_event(_):
     event = Event.objects.all()
     serializer = EventSerializer(event, many=True)
     return Response(serializer.data)
+
 
 @extend_schema(
     operation_id="best_staff_birdept_members",
@@ -57,24 +58,41 @@ def get_event(_):
 def get_birdept_member(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
-    
     try:
-        if not isinstance(request.sso_user, SSOAccount):
-            request.sso_user = SSOAccount.objects.get(username=request.sso_user["user"])
-
         current_user = BEMMember.objects.get(sso_account=request.sso_user)    
     except Exception:
-        # Adjust Error msg for this one (no info mw dikasi error msg apa)
         return Response({'error_message': 'Anda bukan staff BEM'}, status=status.HTTP_403_FORBIDDEN)
     
-    members = (
-        BEMMember.objects
-            .filter(birdept__in=current_user.birdept.all())
+    if current_user.role == 'KOOR':
+        members = (
+            BEMMember.objects
+            .filter(role='STAFF')
             .exclude(pk=current_user.pk)
             .distinct()
+        )
+    else:
+        members = (
+            BEMMember.objects
+            .filter(
+                birdept__in=current_user.birdept.all(),
+                role='STAFF'
+            )
+            .exclude(pk=current_user.pk)
+            .distinct()
+        )
+
+    members = list(members)
+
+    members.sort(
+        key=lambda m: (
+            list(m.birdept.values_list('nama', flat=True))[0]
+            if m.birdept.exists()
+            else ''
+        )
     )
 
     return Response(BEMMemberSerializer(members, many=True).data)
+
 
 @extend_schema(
     operation_id="best_staff_statistics_all",
@@ -98,6 +116,7 @@ def get_birdept_member(request):
     },
 )
 @api_view(["GET"])
+@sso_authenticated
 def get_all_statistics(request):
     year = request.query_params.get("year")
     month = request.query_params.get("month")
@@ -124,6 +143,7 @@ def get_all_statistics(request):
                     {
                         "name": member.sso_account.full_name,
                         "count": votes.filter(voted=member).count(),
+                        "img_url": member.img_url,
                     }
                     for member in BEMMember.objects.filter(birdept=birdept)
                 ],
@@ -171,11 +191,11 @@ def get_statistic(request, birdept):
     month = request.query_params.get("month")
 
     try:
-        Birdept.objects.get(nama=birdept)
+        Birdept.objects.get(nama__iexact=birdept)
     except Birdept.DoesNotExist:
         return Response({'error_message': 'Birdept tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
 
-    birdept = Birdept.objects.get(nama=birdept)
+    birdept = Birdept.objects.get(nama__iexact=birdept)
     votes = Vote.objects.filter(birdept=birdept)
 
     if year and month:
@@ -195,13 +215,15 @@ def get_statistic(request, birdept):
             "details": [
                 {
                     "name": m.sso_account.full_name,
-                    "count": votes.filter(voted=m).count()
+                    "count": votes.filter(voted=m).count(),
+                    "img_url": m.img_url,
                 } for m in member
             ]
         }
     }
 
     return Response(responses)
+
 
 @extend_schema(
     operation_id="best_staff_winners",
@@ -212,7 +234,6 @@ def get_statistic(request, birdept):
     responses={200: AllWinnersOutSerializer, 400: OpenApiResponse(description="Invalid year/month"), 401: OpenApiResponse(description="Unauthorized")},
 )
 @api_view(['GET'])
-@sso_authenticated
 def get_all_winners(request):
     year = request.query_params.get("year")
     month = request.query_params.get("month")
@@ -252,6 +273,7 @@ def get_all_winners(request):
         m.pk: {
             "npm": m.pk,
             "name": m.sso_account.full_name,
+            "img_url": m.img_url,
         }
         for m in BEMMember.objects.select_related("sso_account")
     }
@@ -282,18 +304,17 @@ def get_all_winners(request):
         "results": data
     })
 
+
 @extend_schema(
     operation_id="best_staff_birdept_list",
     responses=BirdeptSerializer(many=True),
 )
 @api_view(['GET'])
 def get_birdept(request):
-    if request.sso_user is None:
-        return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
-    
     birdept = Birdept.objects.all()
     serializer = BirdeptSerializer(birdept, many=True)
     return Response(serializer.data)
+
 
 @extend_schema(
     operation_id="best_staff_vote_create",
@@ -312,58 +333,71 @@ def get_birdept(request):
         403: OpenApiResponse(description="Forbidden"),
     },
 )
+@csrf_exempt
 @sso_authenticated
 @api_view(["POST"])
 def create_vote(request, voted_npm): 
-    # get voter (BEMMember) object
-    voter_sso = SSOAccount.objects.get(username=request.sso_user)
-    voter = BEMMember.objects.get(sso_account=voter_sso.npm)
+    voter = BEMMember.objects.get(sso_account=request.sso_user)
 
     # handle just in case votednya bukan anggota BEM
     try:
-        voted = BEMMember.objects.get(sso_account=voted_npm)
+        voted = BEMMember.objects.get(pk=voted_npm)
     except BEMMember.DoesNotExist:
         return Response({'error_message': 'NPM tidak terdaftar sebagai anggota BEM'}, status=status.HTTP_403_FORBIDDEN)
-
-    voter_birdept = voter.birdept.all()
-    voted_birdept = voted.birdept.all()
 
     if (voter.pk == voted_npm):
         return Response({'error_message': 'Tidak bisa vote diri sendiri'}, status=status.HTTP_403_FORBIDDEN)
 
-    if voter.role != "KOOR" and voted.role == "KOOR":
-        return Response({'error_message': 'Anda tidak bisa vote koorbid'}, status=status.HTTP_403_FORBIDDEN)
+    if voted.role != "STAFF":
+        return Response(
+            {'error_message': 'Vote hanya bisa diberikan kepada STAFF'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    voter_birdept = voter.birdept.all()
+    voted_birdept = voted.birdept.all()
 
-    if not set(voter_birdept).intersection(voted_birdept):
-        return Response({'error_message': 'Anda tidak bisa vote anggota birdept lain'}, status=status.HTTP_403_FORBIDDEN)
+    # BPH & STAFF: hanya boleh vote 1 staff di birdept sendiri
+    if voter.role in ["BPH", "STAFF"]:
+        if not set(voter_birdept).intersection(voted_birdept):
+            return Response(
+                {'error_message': 'Anda hanya bisa vote staff di birdept sendiri'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        if Vote.objects.filter(voter=voter).exists():
+            return Response(
+                {'error_message': 'Anda hanya bisa vote satu kali'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-    all_votes = Vote.objects.filter(voter=voter)
-    all_vote_birdept_ids = all_votes.values_list("birdept", flat=True)
-    voter_birdept_ids = voter.birdept.all().values_list("id", flat=True)
-    if len(voter_birdept_ids.difference(all_vote_birdept_ids)) == 0:
-        return Response({'error_message': 'Anda sudah vote di seluruh birdept'}, status=status.HTTP_403_FORBIDDEN)
+   # KOOR: boleh lintas birdept, tapi max 1 per birdept
+    if voter.role == "KOOR":
+        voted_birdept_id = voted.birdept.first().id
 
-    if voted.role != "KOOR" and len(Vote.objects.filter(voter=voter, birdept_id__in=[voted.birdept.first()])) > 0:
-        return Response({'error_message': 'Anda sudah vote di birdept ini'}, status=status.HTTP_403_FORBIDDEN)
-
-    if voted.role == "KOOR" and len(Vote.objects.filter(voter=voter, voted__role="KOOR")) > 0:
-        return Response({'error_message': 'Anda sudah vote di birdept ini'}, status=status.HTTP_403_FORBIDDEN)
-
-    if voted.role == "KOOR":
-        vote = Vote.objects.create(voter=voter, voted=voted, birdept_id=1)
-
-    if voted.role != "KOOR":
-        vote = Vote.objects.create(voter=voter, voted=voted, birdept_id=voted.birdept.first().id)  
-
-
+        if Vote.objects.filter(
+            voter=voter,
+            birdept_id=voted_birdept_id
+        ).exists():
+            return Response(
+                {'error_message': 'Anda sudah vote staff di birdept ini'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+    
+    vote = Vote.objects.create(
+        voter=voter,
+        voted=voted,
+        birdept_id=voted.birdept.first().id
+    )
 
     return Response(
         {
             'message': 'Vote berhasil',
             'payload': {
                 'voted_name': voted.sso_account.full_name,
-                    'timestamp': vote.created_at
-                }
+                'birdept': voted.birdept.first().nama,
+                'timestamp': vote.created_at
+            }
         }, 
         status=status.HTTP_201_CREATED
     )
