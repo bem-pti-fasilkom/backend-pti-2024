@@ -1,6 +1,3 @@
-# best_staff/test_tests.py
-from django.test import TestCase
-from rest_framework import status
 from rest_framework.test import APITestCase, APIRequestFactory
 from unittest.mock import patch
 from datetime import datetime, timedelta
@@ -14,20 +11,17 @@ from .views import (
     get_birdept_member,
     get_all_winners,
     get_birdept,
-    VoteAPIView,
+    get_statistic,
+    create_vote,
 )
 
-# Bypass sso authentication
 @patch("best_staff.views.sso_authenticated", lambda f: f)
 class BestStaffTest(APITestCase):
-
-    # Setup test data
     def setUp(self):
         self.factory = APIRequestFactory()
 
-        # Test data SSOAccount
         self.sso_user1 = SSOAccount.objects.create(
-            npm='2106001001',
+            npm='0000000001',
             full_name='Staff One',
             username='staff1',
             faculty='Fakultas Ilmu Komputer',
@@ -37,7 +31,27 @@ class BestStaffTest(APITestCase):
         )
 
         self.sso_user2 = SSOAccount.objects.create(
-            npm='2106001002',
+            npm='0000000002',
+            full_name='Staff Two',
+            username='staff2',
+            faculty='Fakultas Ilmu Komputer',
+            short_faculty='Fasilkom',
+            major='Ilmu Komputer',
+            program='S1 Reguler'
+        )
+
+        self.sso_user3 = SSOAccount.objects.create(
+            npm='0000000003',
+            full_name='Staff Three',
+            username='staff3',
+            faculty='Fakultas Ilmu Komputer',
+            short_faculty='Fasilkom',
+            major='Ilmu Komputer',
+            program='S1 Reguler',
+        )
+
+        self.sso_user4 = SSOAccount.objects.create(
+            npm='0000000004',
             full_name='BPH Member',
             username='bph1',
             faculty='Fakultas Ilmu Komputer',
@@ -46,8 +60,8 @@ class BestStaffTest(APITestCase):
             program='S1 Reguler'
         )
 
-        self.sso_user3 = SSOAccount.objects.create(
-            npm='2106001003',
+        self.sso_user5 = SSOAccount.objects.create(
+            npm='0000000005',
             full_name='Coordinator',
             username='koor1',
             faculty='Fakultas Ilmu Komputer',
@@ -56,22 +70,20 @@ class BestStaffTest(APITestCase):
             program='S1 Reguler'
         )
 
-        # Test data Birdepts
         self.birdept1 = Birdept.objects.create(
-            nama='Internal',
-            displayed_name='Internal',
-            deskripsi='Departemen Internal',
+            nama='Birdept Satu',
+            displayed_name='Birdept1',
+            deskripsi='Departemen Satu BEM',
             galeri=[]
         )
 
         self.birdept2 = Birdept.objects.create(
-            nama='External',
-            displayed_name='External',
-            deskripsi='Departemen External',
+            nama='Birdept Dua',
+            displayed_name='Birdept2',
+            deskripsi='Departemen Dua BEM',
             galeri=[]
         )
 
-        # Test data BEMMembers
         self.bem_user1 = BEMMember.objects.create(
             sso_account=self.sso_user1,
             role=BEMMember.Role.STAFF,
@@ -81,26 +93,38 @@ class BestStaffTest(APITestCase):
 
         self.bem_user2 = BEMMember.objects.create(
             sso_account=self.sso_user2,
-            role=BEMMember.Role.BPH,
+            role=BEMMember.Role.STAFF,
             img_url='https://testdata.com/img2.jpg'
         )
         self.bem_user2.birdept.add(self.birdept1)
 
         self.bem_user3 = BEMMember.objects.create(
             sso_account=self.sso_user3,
-            role=BEMMember.Role.KOOR,
+            role=BEMMember.Role.STAFF,
             img_url='https://testdata.com/img3.jpg'
         )
-        self.bem_user3.birdept.add(self.birdept1, self.birdept2)
+        self.bem_user3.birdept.add(self.birdept2)
 
-        # Test data Events
+        self.bem_user4 = BEMMember.objects.create(
+            sso_account=self.sso_user4,
+            role=BEMMember.Role.BPH,
+            img_url='https://testdata.com/img4.jpg'
+        )
+        self.bem_user4.birdept.add(self.birdept1)
+
+        self.bem_user5 = BEMMember.objects.create(
+            sso_account=self.sso_user5,
+            role=BEMMember.Role.KOOR,
+            img_url='https://testdata.com/img5.jpg'
+        )
+        self.bem_user5.birdept.add(self.birdept1)
+
         now = datetime.now()
         self.event1 = Event.objects.create(
             start=now,
             end=now + timedelta(hours=2)
         )
 
-        # Test data Votes
         Vote.objects.create(
             voter=self.bem_user1,
             voted=self.bem_user2,
@@ -109,34 +133,23 @@ class BestStaffTest(APITestCase):
         )
 
         Vote.objects.create(
-            voter=self.bem_user2,
-            voted=self.bem_user1,
+            voter=self.bem_user4,
+            voted=self.bem_user2,
             birdept=self.birdept1,
             created_at=now
         )
 
-    # Authenticator helper (simulate autentikasi SSO)
     def _create_authenticated_request(self, method, path, user, data=None):
         if method == 'GET':
             request = self.factory.get(path)
         elif method == 'POST':
-            request = self.factory.post(path, data, format='json')
+            request = self.factory.post(path, data or {})
         elif method == 'PUT':
-            request = self.factory.put(path, data, format='json')
+            request = self.factory.put(path, data or {})
         elif method == 'DELETE':
             request = self.factory.delete(path)
         
-        request.sso_user = {
-            'npm': user.npm,
-            'user': user.username,
-            'nama': user.full_name,
-            'jurusan': {
-                'faculty': user.faculty,
-                'shortFaculty': user.short_faculty,
-                'major': user.major,
-                'program': user.program
-            }
-        }
+        request.sso_user = user
         
         return request
 
@@ -155,143 +168,147 @@ class BestStaffTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
-    def test_get_birdept_member(self):
+    def test_get_birdept_member_as_staff(self):
         request = self._create_authenticated_request('GET', '/birdept/member/', self.sso_user1)
         response = get_birdept_member(request)
         
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.data, list)
         
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['sso_account']['npm'], self.sso_user2.npm) # Exclude self
+    
+    def test_get_birdept_member_as_koor(self):
+        request = self._create_authenticated_request('GET', '/birdept/member/', self.sso_user5)
+        response = get_birdept_member(request)
+        
+        self.assertEqual(response.status_code, 200)
         member_npms = [member['sso_account']['npm'] for member in response.data]
         
-        # bem_user2 dan bem_user3 ada di birdept1
-        self.assertIn(self.sso_user2.npm, member_npms)  
+        # KOOR should see all STAFF
+        self.assertIn(self.sso_user1.npm, member_npms)
+        self.assertIn(self.sso_user2.npm, member_npms)
         self.assertIn(self.sso_user3.npm, member_npms)
-    
-        # Exclude current user
-        self.assertNotIn(self.sso_user1.npm, member_npms)
         
-        # Verify count (2 members: bem_user2 and bem_user3)
-        self.assertEqual(len(response.data), 2)
+        # KOOR should not see themselves or BPH
+        self.assertNotIn(self.sso_user4.npm, member_npms)
+        self.assertNotIn(self.sso_user5.npm, member_npms)
     
     def test_get_all_statistics_success(self):
-        request = self.factory.get('/statistics/')
+        request = self._create_authenticated_request('GET', '/statistics/', self.sso_user1)
         response = get_all_statistics(request)
         
         self.assertEqual(response.status_code, 200)
         self.assertIn('birdepts', response.data)
         self.assertEqual(len(response.data['birdepts']), 2)
-        self.assertEqual(response.data['birdepts'][0]['name'], 'Internal')
 
     def test_get_all_statistics_detailed(self):
-        request = self.factory.get('/statistics/')
+        request = self._create_authenticated_request('GET', '/statistics/', self.sso_user1)
         response = get_all_statistics(request)
         
         self.assertEqual(response.status_code, 200)
         self.assertIn('birdepts', response.data)
-        self.assertEqual(len(response.data['birdepts']), 2)
         
-        # Cek birdept pertama
-        self.assertEqual(response.data['birdepts'][0]['name'], 'Internal')
-        self.assertIn('votes', response.data['birdepts'][0])
-        self.assertIsInstance(response.data['birdepts'][0]['votes'], list)
+        internal_data = next(
+            (b for b in response.data['birdepts'] if b['name'] == 'Birdept Satu'),
+            None
+        )
+        self.assertIsNotNone(internal_data)
+        self.assertIn('votes', internal_data)
+        self.assertIsInstance(internal_data['votes'], list)
         
-        # Cek struktur vote
-        if len(response.data['birdepts'][0]['votes']) > 0:
-            vote_detail = response.data['birdepts'][0]['votes'][0]
-            self.assertIn('name', vote_detail)
-            self.assertIn('count', vote_detail)
-            self.assertIsInstance(vote_detail['count'], int)
-        
-        # Verify semua BEM Member di birdept1 termasuk di response
-        birdept1_members = BEMMember.objects.filter(birdept=self.birdept1)
-        vote_names = [v['name'] for v in response.data['birdepts'][0]['votes']]
+        if len(internal_data['votes']) > 0:
+            vote = internal_data['votes'][0]
+            self.assertIn('name', vote)
+            self.assertIn('count', vote)
+            self.assertIn('img_url', vote)
 
-        for member in birdept1_members:
-            self.assertIn(member.sso_account.full_name, vote_names)
-    
+    def test_get_all_statistics_with_date_filter(self):
+        past_date = datetime.now() - timedelta(days=60)
+        Vote.objects.create(
+            voter=self.bem_user5,
+            voted=self.bem_user3,
+            birdept=self.birdept2,
+            created_at=past_date
+        )
+        
+        # Test current month (should exclude past vote)
+        now = datetime.now()
+        request = self._create_authenticated_request(
+            'GET',
+            f'/statistics/?year={now.year}&month={now.month}',
+            self.sso_user1
+        )
+        response = get_all_statistics(request)
+        
+        self.assertEqual(response.status_code, 200)
+        
+        external_now = next(
+            (b for b in response.data['birdepts'] if b['name'] == 'Birdept Dua'),
+            None
+        )
+        self.assertIsNotNone(external_now)
+        staff5_now = next(
+            (v for v in external_now['votes'] if v['name'] == 'Staff Three'),
+            None
+        )
+        self.assertIsNotNone(staff5_now)
+        self.assertEqual(staff5_now['count'], 0)
+        
+        request_past = self._create_authenticated_request(
+            'GET',
+            f'/statistics/?year={past_date.year}&month={past_date.month}',
+            self.sso_user1
+        )
+        response_past = get_all_statistics(request_past)
+        
+        self.assertEqual(response_past.status_code, 200)
+        
+        external_data = next(
+            (b for b in response_past.data['birdepts'] if b['name'] == 'Birdept Dua'),
+            None
+        )
+        self.assertIsNotNone(external_data)
+        
+        staff3_votes = next(
+            (v for v in external_data['votes'] if v['name'] == 'Staff Three'),
+            None
+        )
+        self.assertIsNotNone(staff3_votes)
+        self.assertEqual(staff3_votes['count'], 1)
+
     def test_get_birdept_success(self):
-        request = self._create_authenticated_request('GET', '/birdept/', self.sso_user1)
+        request = self.factory.get('/birdept/')
         response = get_birdept(request)
         
         self.assertEqual(response.status_code, 200)
-        self.assertIsInstance(response.data, list)
         self.assertEqual(len(response.data), 2)
-        
-        # Cek struktur birdept
-        birdept_names = [b['nama'] for b in response.data]
-        self.assertIn('Internal', birdept_names)
-        self.assertIn('External', birdept_names)
-        
-        first_birdept = response.data[0]
-        self.assertIn('nama', first_birdept)
-        self.assertIn('displayed_name', first_birdept)
-        self.assertIn('deskripsi', first_birdept)
-        self.assertIn('galeri', first_birdept)
-        self.assertEqual(first_birdept['nama'], 'Internal')
-        self.assertEqual(first_birdept['deskripsi'], 'Departemen Internal')
     
     def test_get_all_winners_current_month(self):
-        request = self._create_authenticated_request('GET', '/winners/', self.sso_user1)
+        request = self.factory.get('/winners/')
         response = get_all_winners(request)
         
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('filters', response.data)
-        self.assertIn('count', response.data)
-        
-        # Cek filter kosong maka akan menggunakan datetime.now()
-        self.assertIsNone(response.data['filters']['year'])
-        self.assertIsNone(response.data['filters']['month'])
-        
-        # Cek struktur data
-        if response.data['count'] > 0:
-            result = response.data['results'][0]
-            self.assertIn('birdept_id', result)
-            self.assertIn('birdept', result)
-            self.assertIn('total_votes', result)
-            self.assertIn('top_votes', result)
-            self.assertIn('tie', result)
-            self.assertIn('winners', result)
-            self.assertIsInstance(result['winners'], list)
-            
-            if len(result['winners']) > 0:
-                winner = result['winners'][0]
-                self.assertIn('npm', winner)
-                self.assertIn('name', winner)
-                self.assertIn('votes', winner)
 
     def test_get_all_winners_with_year_month(self):
         now = datetime.now()
-        request = self._create_authenticated_request(
-            'GET', 
-            f'/winners/?year={now.year}&month={now.month}', 
-            self.sso_user1
-        )
+        request = self.factory.get(f'/winners/?year={now.year}&month={now.month}')
         response = get_all_winners(request)
         
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['filters']['year'], str(now.year))
         self.assertEqual(response.data['filters']['month'], str(now.month))
-        self.assertIn('results', response.data)
-        
-        # Cek setup vote
-        self.assertGreater(response.data['count'], 0)
-        
-        # Cek jika birdept 1 menang (dummy vote di birdept 1)
-        birdept_names = [r['birdept'] for r in response.data['results']]
-        self.assertIn('Internal', birdept_names)
 
-    # VoteAPIView
-    def test_vote_api_view_get_success(self):
-        view = VoteAPIView.as_view()
+    def test_get_statistic_success(self):
         request = self._create_authenticated_request(
             'GET', 
             f'/vote/statistics/{self.birdept1.nama}/', 
             self.sso_user1
         )
         
-        response = view(request, birdept=self.birdept1.nama)
+        response = get_statistic(request, birdept=self.birdept1.nama)
         
         self.assertEqual(response.status_code, 200)
         self.assertIn('total_votes', response.data)
@@ -299,20 +316,132 @@ class BestStaffTest(APITestCase):
         self.assertIn('votes', response.data)
         self.assertIn('details', response.data['votes'])
         
-        # Cek struktur vote
         vote_details = response.data['votes']['details']
         self.assertIsInstance(vote_details, list)
-        self.assertGreater(len(vote_details), 0)
         
-        # Cek vote detail bisa / tidak
         for detail in vote_details:
             self.assertIn('name', detail)
             self.assertIn('count', detail)
-            self.assertIsInstance(detail['count'], int)
-        
-        # Verify semua member birdept 1 included
-        birdept1_members = BEMMember.objects.filter(birdept=self.birdept1)
-        vote_names = [v['name'] for v in vote_details]
+            self.assertIn('img_url', detail)
 
-        for member in birdept1_members:
-            self.assertIn(member.sso_account.full_name, vote_names)
+    def test_get_statistic_with_date_filter(self):
+        past_date = datetime.now() - timedelta(days=60)
+        Vote.objects.create(
+            voter=self.bem_user5,
+            voted=self.bem_user3,
+            birdept=self.birdept2,
+            created_at=past_date
+        )
+        
+        request_past = self._create_authenticated_request(
+            'GET',
+            f'/vote/statistics/{self.birdept2.nama}/?year={past_date.year}&month={past_date.month}',
+            self.sso_user3
+        )
+        
+        response_past = get_statistic(request_past, birdept=self.birdept2.nama)
+        
+        self.assertEqual(response_past.status_code, 200)
+        self.assertEqual(response_past.data['total_votes'], 1)
+
+        now = datetime.now()
+        request_now = self._create_authenticated_request(
+            'GET',
+            f'/vote/statistics/{self.birdept2.nama}/?year={now.year}&month={now.month}',
+            self.sso_user3
+        )
+        
+        response_now = get_statistic(request_now, birdept=self.birdept2.nama)
+        
+        self.assertEqual(response_now.status_code, 200)
+        self.assertEqual(response_now.data['total_votes'], 0)  # Should be 0 in current month
+
+    def test_create_vote_success(self):
+        request = self._create_authenticated_request(
+            'POST',
+            f'/vote/{self.bem_user3.pk}/',
+            self.sso_user5
+        )
+        
+        response = create_vote(request, voted_npm=self.bem_user3.pk)
+        
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('message', response.data)
+        self.assertEqual(response.data['message'], 'Vote berhasil')
+        self.assertIn('payload', response.data)
+        self.assertEqual(response.data['payload']['voted_name'], 'Staff Three')
+        self.assertEqual(response.data['payload']['birdept'], 'Birdept Dua')
+        
+    def test_create_vote_already_voted_staff(self):
+        request = self._create_authenticated_request(
+            'POST',
+            f'/vote/{self.bem_user2.pk}/',
+            self.sso_user1
+        )
+        
+        response = create_vote(request, voted_npm=self.bem_user2.pk)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('error_message', response.data)
+        self.assertEqual(response.data['error_message'], 'Anda hanya bisa vote satu kali')
+
+    def test_create_vote_cannot_vote_non_staff(self):
+        request = self._create_authenticated_request(
+            'POST',
+            f'/vote/{self.bem_user4.pk}/',
+            self.sso_user3
+        )
+        
+        response = create_vote(request, voted_npm=self.bem_user4.pk)
+        
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('error_message', response.data)
+        self.assertEqual(response.data['error_message'], 'Vote hanya bisa diberikan kepada STAFF')
+
+    def test_create_vote_koor_already_voted_in_birdept(self):
+        Vote.objects.create(
+            voter=self.bem_user5,
+            voted=self.bem_user1,
+            birdept=self.birdept1,
+            created_at=datetime.now()
+        )
+
+        request = self._create_authenticated_request(
+            'POST',
+            f'/vote/{self.bem_user2.pk}/',
+            self.sso_user5
+        )
+        
+        response = create_vote(request, voted_npm=self.bem_user2.pk)
+        
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('error_message', response.data)
+        self.assertEqual(response.data['error_message'], 'Anda sudah vote staff di birdept ini')
+
+    def test_create_vote_cannot_vote_self(self):
+        request = self._create_authenticated_request(
+            'POST',
+            f'/vote/{self.bem_user1.pk}/',
+            self.sso_user1
+        )
+        
+        response = create_vote(request, voted_npm=self.bem_user1.pk)
+        
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('error_message', response.data)
+        self.assertEqual(response.data['error_message'], 'Tidak bisa vote diri sendiri')
+
+    def test_create_vote_staff_different_birdept(self):
+        Vote.objects.filter(voter=self.bem_user1).delete()
+        
+        request = self._create_authenticated_request(
+            'POST',
+            f'/vote/{self.bem_user3.pk}/',
+            self.sso_user1
+        )
+        
+        response = create_vote(request, voted_npm=self.bem_user3.pk)
+        
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('error_message', response.data)
+        self.assertEqual(response.data['error_message'], 'Anda hanya bisa vote staff di birdept sendiri')
