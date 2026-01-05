@@ -4,19 +4,29 @@ from .models import Image, Video
 class ImagePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = ['image_url']
+        fields = ['image']
 
 class VideoPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
-        fields = ['video_url']
+        fields = ['video']
 
 class ImageGetSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = Image
-        fields = ['uuid', 'image_url']
+        fields = ['uuid', 'image']
+
+    def get_image(self, obj):
+        return obj.image.url
 
 class VideoGetSerializer(serializers.ModelSerializer):
+    video = serializers.SerializerMethodField()
+
     class Meta:
         model = Video
-        fields = ['uuid', 'video_url']
+        fields = ['uuid', 'video']
+
+    def get_video(self, obj):
+        return obj.video.url
