@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from .models import BEMMember, Event, Birdept, Vote
+from .models import BEMMember, Event, Birdept, Vote, Winner
 from .serializers import SSOAccountSerializer
 from django.contrib import admin
 from django import forms
@@ -61,3 +61,9 @@ class BirdeptAdmin(admin.ModelAdmin):
         if obj: 
             return ['galeri']
         return []
+    
+@admin.register(Winner)
+class WinnerAdmin(admin.ModelAdmin):
+    list_display = ["member", "pesan_singkat", "month", "year", "rank"]
+    list_filter = ["month", "year"]
+    search_fields = ["member"]

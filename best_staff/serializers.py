@@ -1,4 +1,4 @@
-from .models import BEMMember, Event, Birdept, Vote
+from .models import BEMMember, Event, Birdept, Vote, Winner
 from rest_framework import serializers
 from jwt.models import SSOAccount
 
@@ -34,6 +34,11 @@ class BEMMemberSerializer(serializers.ModelSerializer):
 
     def get_birdept(self, obj):
         return list(obj.birdept.values_list("nama", flat=True))
+
+class WinnerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Winner
+        fields = ["member", "pesan singkat", "month", "year", "rank"]
 
 # tambahan serializer buat serialize output
 
@@ -77,3 +82,9 @@ class AllWinnersOutSerializer(serializers.Serializer):
     filters = Filters()
     count = serializers.IntegerField()
     results = WinnerRowSerializer(many=True)
+
+class WinnerSerializer(serializers.Serializer):
+    pesan_singkat = serializers.CharField()
+    month = serializers.IntegerField()
+    year = serializers.IntegerField()
+    rank = serializers.IntegerField()

@@ -1,10 +1,9 @@
-from .serializers import BEMMemberSerializer, EventSerializer, BirdeptSerializer, AllStatisticsOut, VoteCreateOut, VoteStatsOut, AllWinnersOutSerializer
-from .models import BEMMember, Event, Birdept, Vote
+from .serializers import BEMMemberSerializer, EventSerializer, BirdeptSerializer, AllStatisticsOut, AllWinnersOutSerializer, WinnerSerializer
+from .models import BEMMember, Event, Birdept, Vote, Winner
 from jwt.lib import sso_authenticated, SSOAccount
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.views import APIView
 from django.db.models import Count
 from datetime import datetime
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
@@ -400,4 +399,32 @@ def create_vote(request, voted_npm):
             }
         }, 
         status=status.HTTP_201_CREATED
+    )
+
+@api_view(["GET"])
+def get_valid_winners(request):
+    year = request.GET.get("year")
+    month = request.GET.get("month")
+
+    valid_winners = Winner.objects.filter(year=year, month=month)
+    serializer = WinnerSerializer(valid_winners, many=True)
+    data = serializer.data
+
+    for i in range(len(data)):
+        bem_member = valid_winners[i].member
+        sso_account = bem_member.sso_account
+        member = {
+            'nama': sso_account.full_name,
+            'jurusan': sso_account.major,
+            'angkatan': '20'+sso_account.npm[:2],
+            'birdept': bem_member.birdept.first().nama,
+            'img_url': bem_member.img_url
+        }
+        data[i]['member'] = member
+
+    return Response(
+        {
+            'data': data
+        },
+        status=status.HTTP_200_OK
     )
