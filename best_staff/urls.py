@@ -10,4 +10,5 @@ urlpatterns = [
     path('statistics/<str:birdept>/', views.get_statistic, name='vote_statistics'),
     path('statistics/', views.get_all_statistics, name='all_vote_statistics'),
     path('winners/', views.get_all_winners, name='all_winners'),
+    path('valid_winners/', views.get_valid_winners, name='valid_winners')
 ]

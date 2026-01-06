@@ -97,3 +97,17 @@ class Vote(models.Model):
         )
 
     created_at = models.DateTimeField(editable=True, default=timezone.now)
+
+class Winner(models.Model):
+    member = models.ForeignKey(to=BEMMember, on_delete=models.CASCADE, related_name="winner")
+    pesan_singkat = models.TextField()
+    month = models.PositiveSmallIntegerField()
+    year = models.PositiveSmallIntegerField()
+    rank = models.PositiveSmallIntegerField()
+
+    @property
+    def name(self):
+        return self.member.nama
+
+    def __str__(self):
+        return f"Winner member: {self.member}, pesan_singkat: {self.pesan_singkat}, month: {self.month}, year: {self.year}, rank: {self.rank}"
