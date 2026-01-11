@@ -56,6 +56,8 @@ class EvidenceSerializer(serializers.ModelSerializer):
         fields = ["id", "url", "pengaduan"]
 
 class PengaduanStatusChangeSerializer(serializers.ModelSerializer):
+    admin = serializers.StringRelatedField()
+    
     class Meta:
         model = PengaduanStatusChange
         fields = ["id", "pengaduan", "old_status", "new_status", "admin", "tanggal"]
@@ -103,6 +105,7 @@ class LikeSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
     class Meta:
         model = Comment
         read_only_fields = ["author", "pengaduan", "tanggal_post", "is_anonymous"]
@@ -111,4 +114,4 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_author(self, obj):
         if obj.is_anonymous:
             return None
-        return SSOAccountSerializer(obj.author).data
+        return SSOAccountSerializer(obj.author).data["full_name"]

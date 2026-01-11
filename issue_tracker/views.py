@@ -62,7 +62,7 @@ def get_my_liked_pengaduan(request):
 def get_my_commented_pengaduan(request):
     if request.sso_user is None:
         return Response({'error_message': 'Autentikasi Gagal'}, status=status.HTTP_401_UNAUTHORIZED)
-    pengaduan = Pengaduan.objects.filter(comments__author=request.sso_user)
+    pengaduan = Pengaduan.objects.filter(comments__author=request.sso_user).distinct()
     serializer = PengaduanSerializer(pengaduan, many=True)
     return Response(serializer.data)
 
@@ -294,7 +294,19 @@ class RUDPengaduanAPIView(APIView):
         serializer = PengaduanSerializer(pengaduan, data=request.data, partial=True)
         
         if serializer.is_valid():
-            serializer.save()
+            pengaduan = serializer.save()
+            
+            evidences = request.data.get('evidence')
+            if evidences:
+                if type(evidences) is not list:
+                    evidences = [evidences]
+
+                for evidence in evidences:
+                    Evidence.objects.create(
+                        pengaduan=pengaduan,
+                        url=evidence
+                    )
+                    
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -401,8 +413,9 @@ class CCommentAPIView(APIView):
  
         author = sso_user
         isi = request.data.get('isi')
+        is_anonymous = request.data.get('anonymous', False)
         if isi:
-            comment = Comment.objects.create(author=author, isi=isi, pengaduan=pengaduan)
+            comment = Comment.objects.create(author=author, isi=isi, pengaduan=pengaduan, is_anonymous=is_anonymous)
             return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
         
         return Response({'error_message': 'Isi komentar tidak boleh kosong'}, status=status.HTTP_400_BAD_REQUEST)

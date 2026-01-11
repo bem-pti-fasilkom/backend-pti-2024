@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+import cloudinary
 import environ
 import os
 
@@ -42,6 +43,7 @@ ALLOWED_HOSTS = [
     "backend-pti-937878544108.us-central1.run.app",
     "bem.cs.ui.ac.id"
     ]
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "https://backend-pti-staging-937878544108.us-central1.run.app",
@@ -61,6 +63,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     'corsheaders',
+    "cloudinary",
+    "cloudinary_storage",
 
     # list user created apps here
     "issue_tracker.apps.IssueTrackerConfig",
@@ -166,3 +170,8 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+cloudinary.config(
+    cloudinary_url=env("CLOUDINARY_URL")
+)

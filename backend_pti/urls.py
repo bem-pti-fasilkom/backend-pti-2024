@@ -28,10 +28,10 @@ urlpatterns = [
     path("events/", include("main_web.urls")),
     path("auth/", include("jwt.urls")),
     path("best_staff/", include("best_staff.urls")),
+    path("cloudinary/", include("cloudinary_app.urls")),
 
     # Endpoint buat API documentation
     path('docs/', SpectacularAPIView.as_view(), name='schema'),
     path('docs/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-    path("cloudinary/", include("cloudinary_app.urls"))
 ]
