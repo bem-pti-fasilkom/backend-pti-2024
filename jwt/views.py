@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import HttpRequest, JsonResponse
 from .lib import sso_authenticated, SSOUser
 

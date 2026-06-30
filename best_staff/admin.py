@@ -1,12 +1,7 @@
 from django.contrib import admin
-from django import forms
 from .models import BEMMember, Event, Birdept, Vote, Winner
 from .serializers import SSOAccountSerializer
-from django.contrib import admin
-from django import forms
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from .serializers import SSOAccountSerializer
 from backend_pti.settings import DEBUG
         
 if DEBUG:
