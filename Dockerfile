@@ -1,19 +1,59 @@
-FROM python:3.10-alpine as base
-RUN apk add --update --virtual .build-deps \
+# Builder stage
+FROM python:3.10-alpine as builder
+
+# Set environment variables for Python
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache --virtual .build-deps \
     build-base \
     postgresql-dev \
     python3-dev \
     libpq
 
-COPY requirements.txt /app/requirements.txt
-RUN pip install -r /app/requirements.txt gunicorn
+# Create a virtual environment
+RUN python -m venv /opt/venv
+# Ensure we use the virtual environment
+ENV PATH="/opt/venv/bin:$PATH"
 
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt gunicorn
+
+# Final stage
 FROM python:3.10-alpine
-RUN apk add libpq
-COPY --from=base /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
-COPY --from=base /usr/local/bin/ /usr/local/bin/
-COPY . /app
-ENV PYTHONUNBUFFERED 1
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH"
+
+# Install runtime dependencies (no-cache to keep image small)
+RUN apk add --no-cache libpq
+
+# Create a non-root user and group for security
+RUN addgroup -S django && adduser -S django -G django
+
 WORKDIR /app
-ENTRYPOINT ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 backend_pti.wsgi"]
+
+# Copy virtualenv from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy application code
+COPY . .
+
+# Change ownership of the application code
+RUN chown -R django:django /app
+
+# Switch to non-root user
+USER django
+
+EXPOSE 8000
+
+# Run migrations and start the application
+CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 backend_pti.wsgi"]sgi"]
 EXPOSE 8000
